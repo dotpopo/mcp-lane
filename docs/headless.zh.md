@@ -84,10 +84,14 @@ keychain：能读到该文件的人即拥有该设备身份（可申请配对码
 |---|---|
 | `0` | 成功（`init` 在工作区已注册时同样返回 0）。 |
 | `1` | 运行期失败：relay 拒绝、daemon 未运行（无 `control.json`）、relay/server 侧拒绝，…… |
+| `1` | `pair --help`（以及任一子命令 `--help`：flag 包 help requested）。 |
 | `2` | 用法错误：缺 `--workspace`、`-ttl` 非法、参数个数不对，…… |
+| `2` | 顶层 `--help`（打印用法到 stderr；未命中任何子命令）。 |
 | `3` | 目标不存在：`approve`/`reject` 的 id 未知或已被决议。 |
 
 每个子命令都支持 `--help`（标准 flag 包，`-h` 亦可）。
+两者均为 flag 包原生行为：请求帮助会使参数解析返回 `ErrHelp`，
+子命令映射为 exit 1（顶层分发打印用法并 exit 2）。
 
 ## 端到端例子（全程 loopback）
 

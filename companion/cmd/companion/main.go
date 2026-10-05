@@ -145,7 +145,7 @@ func pair(args []string) error {
 	relay := fs.String("relay", "", "relay base URL (https://relay.example)")
 	name := fs.String("name", "", "device display name (default: hostname)")
 	register := fs.Bool("register", false, "force fresh device registration even when credentials exist")
-	dataDir := fs.String("data-dir", "", "data directory (default: user config dir + /fylane)")
+	dataDir := fs.String("data-dir", "", "data directory (default: $FYLANE_DATA_DIR or user config dir + /fylane)")
 	nonInteractive := fs.Bool("non-interactive", false, "never prompt; fail instead of asking (scripts should always pass this)")
 	ttlFlag := fs.String("ttl", "", "requested pairing-code lifetime, e.g. 10m (the relay's own TTL still caps the effective lifetime)")
 	asJSON := fs.Bool("json", false, "print one JSON document to stdout, human text to stderr")
@@ -191,10 +191,11 @@ func pair(args []string) error {
 	// Persist the tunnel endpoint so every later serve — including the one
 	// the desktop shell auto-starts — connects without a -relay flag.
 	if *dataDir == "" {
-		var err error
-		if *dataDir, err = app.DefaultDataDir(); err != nil {
+		resolved, err := app.ResolveDataDir(*dataDir)
+		if err != nil {
 			return err
 		}
+		*dataDir = resolved
 	}
 	tunnelURL, err := app.TunnelURLFromBase(*relay)
 	if err != nil {

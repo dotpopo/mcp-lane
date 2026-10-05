@@ -70,13 +70,7 @@ func exitCodeOf(err error) int {
 // resolveDataDir honors an explicit -data-dir flag, then FYLANE_DATA_DIR,
 // then the default data directory (same convention as serve).
 func resolveDataDir(flagDir string) (string, error) {
-	if flagDir != "" {
-		return flagDir, nil
-	}
-	if dir := os.Getenv("FYLANE_DATA_DIR"); dir != "" {
-		return dir, nil
-	}
-	return app.DefaultDataDir()
+	return app.ResolveDataDir(flagDir)
 }
 
 // emitJSON prints one JSON document to stdout. Human text, if any, must

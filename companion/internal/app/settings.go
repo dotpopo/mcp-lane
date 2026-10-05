@@ -308,6 +308,19 @@ func DefaultDataDir() (string, error) {
 	return filepath.Join(base, "fylane"), nil
 }
 
+// ResolveDataDir honors an explicit -data-dir flag, then FYLANE_DATA_DIR,
+// then the default data directory. Every subcommand shares this order so a
+// flag always wins and an unset env leaves the default path unchanged.
+func ResolveDataDir(flagDir string) (string, error) {
+	if flagDir != "" {
+		return flagDir, nil
+	}
+	if dir := os.Getenv("FYLANE_DATA_DIR"); dir != "" {
+		return dir, nil
+	}
+	return DefaultDataDir()
+}
+
 func loadSettings(dataDir string) (settings, error) {
 	var s settings
 	raw, err := os.ReadFile(filepath.Join(dataDir, settingsFileName))

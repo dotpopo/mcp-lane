@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/dotpopo/mcp-lane/companion/internal/app"
 )
 
 // init is idempotent: the second run over the same folder verifies and
@@ -60,5 +62,36 @@ func TestResolveDataDirPrecedence(t *testing.T) {
 	t.Setenv("FYLANE_DATA_DIR", "/env/dir")
 	if dir, _ := resolveDataDir(""); dir != "/env/dir" {
 		t.Fatalf("env should win over default, got %q", dir)
+	}
+	// Flag still wins when the env points elsewhere.
+	t.Setenv("FYLANE_DATA_DIR", "/other/env")
+	if dir, _ := resolveDataDir("/flag/dir"); dir != "/flag/dir" {
+		t.Fatalf("flag should win over env, got %q", dir)
+	}
+	// Unset env falls back to the unchanged default path.
+	t.Setenv("FYLANE_DATA_DIR", "")
+	def, err := app.DefaultDataDir()
+	if err != nil {
+		t.Fatalf("default data dir: %v", err)
+	}
+	if dir, _ := resolveDataDir(""); dir != def {
+		t.Fatalf("default should apply when env is unset, got %q want %q", dir, def)
+	}
+}
+
+// init with FYLANE_DATA_DIR pointing at a fresh dir builds it (no -data-dir
+// flag); serve resolving the same env must land in the same place.
+func TestInitUsesEnvDataDirFresh(t *testing.T) {
+	fresh := filepath.Join(t.TempDir(), "fresh-data")
+	t.Setenv("FYLANE_DATA_DIR", fresh)
+	ws := t.TempDir()
+	if err := initCmd([]string{"-workspace", ws, "-non-interactive"}); err != nil {
+		t.Fatalf("init with env data dir: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(fresh, "config.json")); err != nil {
+		t.Fatalf("fresh env dir should gain a minimal config, got %v", err)
+	}
+	if dir, _ := resolveDataDir(""); dir != fresh {
+		t.Fatalf("resolve should land in env dir, got %q want %q", dir, fresh)
 	}
 }

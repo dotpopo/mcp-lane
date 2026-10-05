@@ -59,6 +59,58 @@ func TestParseArgs(t *testing.T) {
 	}
 }
 
+// ResolveDataDir precedence is flag over env over default, shared by serve
+// and the headless commands.
+func TestResolveDataDirPrecedence(t *testing.T) {
+	t.Setenv("FYLANE_DATA_DIR", "/env/dir")
+	if dir, err := ResolveDataDir("/flag/dir"); err != nil || dir != "/flag/dir" {
+		t.Fatalf("flag should win, got %q, %v", dir, err)
+	}
+	if dir, err := ResolveDataDir(""); err != nil || dir != "/env/dir" {
+		t.Fatalf("env should win over default, got %q, %v", dir, err)
+	}
+	// Flag wins even when the env points elsewhere.
+	t.Setenv("FYLANE_DATA_DIR", "/other/env")
+	if dir, err := ResolveDataDir("/flag/dir"); err != nil || dir != "/flag/dir" {
+		t.Fatalf("flag should win over env, got %q, %v", dir, err)
+	}
+	// Unset env falls back to the default path, which is unchanged.
+	t.Setenv("FYLANE_DATA_DIR", "")
+	def, err := DefaultDataDir()
+	if err != nil {
+		t.Fatalf("DefaultDataDir: %v", err)
+	}
+	if dir, err := ResolveDataDir(""); err != nil || dir != def {
+		t.Fatalf("default should apply when env is unset, got %q, %v (want %q)", dir, err, def)
+	}
+}
+
+// An env dir that does not exist yet still resolves (serve creates it on Run;
+// init creates it with a fresh config). Parse must not fail or fall back.
+func TestParseArgsDataDirEmptyEnvDir(t *testing.T) {
+	fresh := filepath.Join(t.TempDir(), "fresh-subdir")
+	t.Setenv("FYLANE_DATA_DIR", fresh)
+	cfg, err := ParseArgs([]string{})
+	if err != nil {
+		t.Fatalf("ParseArgs with fresh env dir: %v", err)
+	}
+	if cfg.DataDir != fresh {
+		t.Fatalf("DataDir = %q, want env %q", cfg.DataDir, fresh)
+	}
+	if cfg.RelayURL != "" {
+		t.Fatalf("fresh dir should have no stored relay, got %q", cfg.RelayURL)
+	}
+	// An explicit flag still wins over the env.
+	other := t.TempDir()
+	cfg, err = ParseArgs([]string{"-data-dir", other})
+	if err != nil {
+		t.Fatalf("ParseArgs with flag: %v", err)
+	}
+	if cfg.DataDir != other {
+		t.Fatalf("flag should win over env, got %q want %q", cfg.DataDir, other)
+	}
+}
+
 // Direct mode publishes a listener to the internet, so what it accepts is a
 // security boundary, not a convenience.
 func TestParseArgsDirectMode(t *testing.T) {

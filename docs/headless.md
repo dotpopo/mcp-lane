@@ -87,10 +87,15 @@ see below); the mitigations above are the whole protection today.
 |---|---|
 | `0` | Success (`init` also returns 0 when the workspace was already registered). |
 | `1` | Operational failure: relay refused, daemon not running (no `control.json`), unknown flag values the relay/server rejected, ... |
+| `1` | `pair --help` (and any subcommand `--help`: flag package help requested). |
 | `2` | Usage error: missing `--workspace`, bad `-ttl`, wrong argument count, ... |
+| `2` | Top-level `--help` (usage to stderr; no subcommand matched). |
 | `3` | Target unknown: `approve`/`reject` for an id that is unknown or already decided. |
 
 `--help` works on every subcommand (`-h` included, standard flag package).
+Both help cases are native flag-package behavior: a help request makes
+flag parsing return `ErrHelp`, which maps to exit 1 for subcommands
+(the top-level dispatcher prints usage and exits 2).
 
 ## Worked end-to-end example (loopback only)
 

@@ -61,9 +61,9 @@ func ParseArgs(args []string) (*Config, error) {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	cfg := &Config{}
 	var dataDir, level string
-	fs.StringVar(&dataDir, "data-dir", "", "data directory (default: user config dir + /fylane)")
+	fs.StringVar(&dataDir, "data-dir", "", "data directory (default: $FYLANE_DATA_DIR or user config dir + /fylane)")
 	fs.StringVar(&cfg.Addr, "addr", "127.0.0.1:8787", "local MCP listen address")
-	fs.StringVar(&cfg.RelayURL, "relay", "", "relay tunnel endpoint (ws:// or wss://); requires FYLANE_TUNNEL_TOKEN")
+	fs.StringVar(&cfg.RelayURL, "relay", "", "relay tunnel endpoint (ws:// or wss://; uses paired device credentials, or FYLANE_TUNNEL_TOKEN in legacy mode; omit when pair already saved one)")
 	fs.StringVar(&cfg.DirectAddr, "direct-addr", "", "serve the public OAuth + MCP surface here (loopback) for a tunnel to publish; direct mode, no relay")
 	fs.StringVar(&cfg.PublicURL, "public-url", "", "public base URL the tunnel exposes -direct-addr at (direct mode)")
 	fs.StringVar(&cfg.TunnelProvider, "tunnel", "", "tunnel to start for direct mode: cloudflare-quick, cloudflare-named, tailscale-funnel, ngrok (default: stored setting)")
@@ -81,10 +81,11 @@ func ParseArgs(args []string) (*Config, error) {
 	}
 
 	if dataDir == "" {
-		var err error
-		if dataDir, err = DefaultDataDir(); err != nil {
+		resolved, err := ResolveDataDir(dataDir)
+		if err != nil {
 			return nil, err
 		}
+		dataDir = resolved
 	}
 	cfg.DataDir = dataDir
 
