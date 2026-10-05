@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // decisionRecorder writes what the user decided, and how long the platform

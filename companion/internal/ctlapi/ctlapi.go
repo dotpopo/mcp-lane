@@ -23,16 +23,16 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/pairclaim"
-	"github.com/leazoot/fylane/companion/internal/readbox"
-	"github.com/leazoot/fylane/companion/internal/routerule"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/txn"
-	"github.com/leazoot/fylane/companion/internal/update"
-	"github.com/leazoot/fylane/companion/internal/workspace"
-	"github.com/leazoot/fylane/shared/buildinfo"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/pairclaim"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/routerule"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/update"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/shared/buildinfo"
 )
 
 // controlFileName is written into the data directory for the UI to find the

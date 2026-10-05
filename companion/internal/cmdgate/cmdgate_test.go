@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/cmdrule"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdrule"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // memGrants is an in-memory Grants.

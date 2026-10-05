@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 func memoryFixture(t *testing.T) (*toolset, *store.Store, string) {

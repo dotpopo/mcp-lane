@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"github.com/leazoot/fylane/companion/internal/lsp"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/lsp"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // impactFromLSP answers the engine's impact question using the language

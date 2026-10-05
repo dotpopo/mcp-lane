@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/routerule"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/routerule"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // Endpoints backing the desktop screens that the approval and workspace

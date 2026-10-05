@@ -9,8 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/leazoot/fylane/companion/internal/devicecred"
-	"github.com/leazoot/fylane/companion/internal/tunnelproc"
+	"github.com/dotpopo/mcp-lane/companion/internal/devicecred"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelproc"
 )
 
 // Config is the resolved companion configuration. Secrets are not part of it:

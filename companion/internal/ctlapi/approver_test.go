@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/approver"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/approver"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // fakeApprover stands in for the service: the endpoints are wiring, and the

@@ -278,7 +278,36 @@ func (a *App) CopyText(text string) error {
 // new approval arrives — the platform is blocked on the user's decision, so
 // the window must not stay buried.
 func (a *App) RaiseWindow() {
+	a.showWindow()
+}
+
+// showWindow is what "open" does everywhere: the tray menu and RaiseWindow
+// above share it so the two never disagree. Un-minimise first — showing a
+// minimised window leaves it in the Dock/taskbar, which reads as a click
+// that did nothing.
+func (a *App) showWindow() {
+	if a.ctx == nil {
+		return
+	}
+	runtime.WindowUnminimise(a.ctx)
 	runtime.WindowShow(a.ctx)
+}
+
+// pendingCount is how many approvals the gate holds, for the tray menu's
+// "N requests waiting" row. -1 means unknown — the Core is not answering —
+// and the tray keeps its last title on that rather than flashing.
+func (a *App) pendingCount() int {
+	raw, err := a.call("GET", "/v1/status", nil)
+	if err != nil {
+		return -1
+	}
+	var doc struct {
+		PendingApprovals int `json:"pending_approvals"`
+	}
+	if err := json.Unmarshal([]byte(raw), &doc); err != nil {
+		return -1
+	}
+	return doc.PendingApprovals
 }
 
 // OpenWorkspaceDir reveals a granted folder in the platform's file manager.

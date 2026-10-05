@@ -17,8 +17,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/cmdrule"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdrule"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // Rung is how much the user wants to be asked.

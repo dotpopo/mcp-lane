@@ -10,7 +10,8 @@ import {
   displayWho,
   impactNote,
   laneBoard,
-  pendingInfo,
+  pendingList,
+  riskOf,
   rowNotes,
   taskCommand,
   taskDot,
@@ -19,6 +20,7 @@ import {
   type LaneSnapshot,
   type PendingFile,
   type PendingInfo,
+  type RiskLevel,
 } from "../lib/lane";
 import { duration } from "../lib/records";
 import { useT, type Key, type Translator } from "../lib/i18n";
@@ -59,6 +61,10 @@ export interface LaneProps {
   onDisconnectMachine?: (id: string) => void;
   onApprove: (changeSetID: string) => void;
   onReject: (changeSetID: string) => void;
+  /** Approves every held request, oldest first, one single resolve at a
+   *  time. Absent where the caller cannot report a partial failure, and the
+   *  lane then offers no bulk button rather than a blind one. */
+  onApproveAll?: (changeSetIDs: string[]) => void;
   onSelectWorkspace: (id: string) => void;
   onChooseWorkspace: () => void;
   /** Withdraws a folder from the AI; absent where the rail cannot offer it. */
@@ -74,7 +80,16 @@ export function LaneScreen(props: LaneProps) {
   const { snapshot, tasks } = props;
   const tr = useT();
   const { t } = tr;
-  const pending = pendingInfo(snapshot.approvals, tr);
+  // Every request held at the gate, not just the first: a second one no
+  // longer hides behind the one on screen. The title bar keeps its own
+  // count (App's chrome), this is the card's position inside it.
+  const pendings = pendingList(snapshot.approvals, tr);
+  const [at, setAt] = useState(0);
+  useEffect(() => {
+    setAt((i) => Math.min(i, Math.max(pendings.length - 1, 0)));
+  }, [pendings.length]);
+  const safeAt = Math.min(at, Math.max(pendings.length - 1, 0));
+  const pending = pendings[safeAt] ?? null;
   const board = laneBoard(snapshot.approvals, tasks);
 
   return (
@@ -85,6 +100,18 @@ export function LaneScreen(props: LaneProps) {
             key={pending.changeSetID}
             pending={pending}
             tr={tr}
+            pos={safeAt + 1}
+            total={pendings.length}
+            onPrev={() => setAt((i) => Math.max(i - 1, 0))}
+            onNext={() =>
+              setAt((i) => Math.min(i + 1, Math.max(pendings.length - 1, 0)))
+            }
+            onApproveAll={
+              props.onApproveAll && pendings.length > 1
+                ? () =>
+                    props.onApproveAll!(pendings.map((p) => p.changeSetID))
+                : undefined
+            }
             onApprove={props.onApprove}
             onReject={props.onReject}
           />
@@ -148,11 +175,23 @@ export function LaneScreen(props: LaneProps) {
 function Request({
   pending,
   tr,
+  pos,
+  total,
+  onPrev,
+  onNext,
+  onApproveAll,
   onApprove,
   onReject,
 }: {
   pending: PendingInfo;
   tr: Translator;
+  /** 1-based position inside the held queue, and its length. */
+  pos: number;
+  total: number;
+  onPrev: () => void;
+  onNext: () => void;
+  /** Approves the whole queue; undefined hides the bulk button. */
+  onApproveAll?: () => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
 }) {
@@ -188,8 +227,79 @@ function Request({
   const command = pending.command || pending.what;
   const busy = signed !== "none";
 
+  // Lane shortcuts: a approves, d rejects, e opens the details. They fire
+  // only while this card is on screen, never from a text field — typing an
+  // "a" into the palette search or any input must not approve anything —
+  // never with a modifier held, and never under an open dialog (palette,
+  // pairing, sheets): a letter meant for what is on top must not decide
+  // what is underneath.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+      const el = e.target as HTMLElement | null;
+      if (
+        el &&
+        (el.tagName === "INPUT" ||
+          el.tagName === "TEXTAREA" ||
+          el.tagName === "SELECT" ||
+          el.isContentEditable)
+      ) {
+        return;
+      }
+      if (document.querySelector('[role="dialog"]')) return;
+      if (e.key === "a" || e.key === "A") {
+        e.preventDefault();
+        if (signed !== "none") return;
+        if (wipesATree && !armed) setArmed(true);
+        else decide("approved");
+      } else if (e.key === "d" || e.key === "D") {
+        e.preventDefault();
+        decide("rejected");
+      } else if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        if (signed === "none") setDetails((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   return (
     <div className="fy-scene" data-leaving={busy ? "true" : "false"}>
+      {total > 1 && (
+        <div className="fy-queue">
+          <button
+            type="button"
+            className="fy-underbtn"
+            onClick={onPrev}
+            disabled={busy || pos <= 1}
+          >
+            {t("laneV3.prev")}
+          </button>
+          <span className="fy-queue-pos">
+            {t("laneV3.queuePos", { i: pos, n: total })}
+          </span>
+          <button
+            type="button"
+            className="fy-underbtn"
+            onClick={onNext}
+            disabled={busy || pos >= total}
+          >
+            {t("laneV3.next")}
+          </button>
+          {onApproveAll && (
+            <button
+              type="button"
+              className="fy-underbtn"
+              onClick={onApproveAll}
+              disabled={busy}
+            >
+              {t("laneV3.approveAll", { n: total })}
+            </button>
+          )}
+        </div>
+      )}
+      <Risk pending={pending} tr={tr} />
       <div
         style={{
           display: "flex",
@@ -331,6 +441,7 @@ function Request({
           type="button"
           className="fy-primary"
           data-busy={busy ? "true" : "false"}
+          title="A"
           onClick={() =>
             wipesATree && !armed ? setArmed(true) : decide("approved")
           }
@@ -348,6 +459,7 @@ function Request({
         <button
           type="button"
           className="fy-outline"
+          title="E"
           onClick={() => setDetails((v) => !v)}
           disabled={busy}
         >
@@ -357,12 +469,37 @@ function Request({
         <button
           type="button"
           className="fy-reject"
+          title="D"
           onClick={() => decide("rejected")}
           disabled={busy}
         >
           {t("laneV2.reject")}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** One risk sentence at the top of the approval card.
+ *
+ *  The score is frontend-only (riskOf); the colours are the screen's own:
+ *  brick for high — the same brick the metaline uses for a rule that
+ *  stopped something on purpose — amber for medium, sage for low. No new
+ *  colour is introduced, and the details panel below keeps every original
+ *  field, so this line shortcuts nothing. */
+function Risk({ pending, tr }: { pending: PendingInfo; tr: Translator }) {
+  const level: RiskLevel = riskOf(pending.files);
+  const { t } = tr;
+  return (
+    <div className="fy-risk" data-level={level}>
+      <span className="fy-dot fy-dot-sm" aria-hidden="true" />
+      <span>
+        {level === "high"
+          ? t("laneV3.riskHigh")
+          : level === "medium"
+            ? t("laneV3.riskMedium")
+            : t("laneV3.riskLow")}
+      </span>
     </div>
   );
 }

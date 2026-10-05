@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/leazoot/fylane/companion/internal/lsp"
-	"github.com/leazoot/fylane/companion/internal/machines"
-	"github.com/leazoot/fylane/companion/internal/mcpgate"
-	"github.com/leazoot/fylane/companion/internal/pagesnap"
-	"github.com/leazoot/fylane/companion/internal/routerule"
-	"github.com/leazoot/fylane/companion/internal/tunnelproc"
+	"github.com/dotpopo/mcp-lane/companion/internal/lsp"
+	"github.com/dotpopo/mcp-lane/companion/internal/machines"
+	"github.com/dotpopo/mcp-lane/companion/internal/mcpgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/pagesnap"
+	"github.com/dotpopo/mcp-lane/companion/internal/routerule"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelproc"
 )
 
 // Persisted user-level settings (config.json in the data dir). Secrets never

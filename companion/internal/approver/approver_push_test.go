@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/webpush"
+	"github.com/dotpopo/mcp-lane/companion/internal/webpush"
 )
 
 // fakePush stands in for the push service: it records what it was asked

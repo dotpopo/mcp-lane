@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // Policy modes. There is deliberately no "always allow" mode.

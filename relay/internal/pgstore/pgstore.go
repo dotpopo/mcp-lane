@@ -19,7 +19,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/leazoot/fylane/shared/authsrv"
+	"github.com/dotpopo/mcp-lane/shared/authsrv"
 )
 
 //go:embed migrations/*.sql

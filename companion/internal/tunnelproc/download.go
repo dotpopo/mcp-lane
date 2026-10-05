@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/leazoot/fylane/companion/internal/tunnelget"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelget"
 )
 
 // Fetching a provider's program onto a machine whose Fylane package did not

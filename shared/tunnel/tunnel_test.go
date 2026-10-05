@@ -314,3 +314,73 @@ func TestForwardAnyCarriesAGetAndLeavesItsHeadersAlone(t *testing.T) {
 		t.Errorf("content type %q: the eager SSE header was written over a non-MCP response", ct)
 	}
 }
+
+// Past the companion's concurrency cap, the extra request is refused at once
+// with a 503 carrying the overload error — not queued behind handlers that
+// may block on a human approval, and not dropped silently. The admitted
+// requests still complete normally once released.
+func TestCompanionOverloadRefusesPastTheCap(t *testing.T) {
+	if DefaultMaxConcurrent != 32 {
+		t.Fatalf("DefaultMaxConcurrent = %d, want 32", DefaultMaxConcurrent)
+	}
+	ts, httpServer := startRelay(t)
+	const cap = 3
+	entered := make(chan struct{}, cap+1)
+	release := make(chan struct{})
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		entered <- struct{}{}
+		<-release
+		w.Write([]byte("ok"))
+	})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	client := &Client{RelayURL: wsURL(httpServer), Token: testToken, Handler: handler, MaxConcurrent: cap}
+	go client.Run(ctx)
+	waitForCompanion(t, ts, true)
+
+	// Fill every slot; each admitted request blocks in the handler.
+	type result struct {
+		status int
+		body   string
+	}
+	results := make(chan result, cap+1)
+	post := func() result {
+		resp, err := http.Post(httpServer.URL+"/mcp", "text/plain", strings.NewReader("x"))
+		if err != nil {
+			return result{-1, err.Error()}
+		}
+		defer resp.Body.Close()
+		b, _ := io.ReadAll(resp.Body)
+		return result{resp.StatusCode, string(b)}
+	}
+	for i := 0; i < cap; i++ {
+		go func() { results <- post() }()
+	}
+	for i := 0; i < cap; i++ {
+		select {
+		case <-entered:
+		case <-time.After(5 * time.Second):
+			t.Fatal("admitted requests did not reach the handler")
+		}
+	}
+
+	// One past the cap: refused now, with the overload signal, not queued.
+	refused := post()
+	if refused.status != http.StatusServiceUnavailable || !strings.Contains(refused.body, "overloaded") {
+		t.Fatalf("over-cap request = %d %q, want 503 with the overload error",
+			refused.status, refused.body)
+	}
+
+	// The admitted requests were unaffected and complete normally.
+	close(release)
+	for i := 0; i < cap; i++ {
+		select {
+		case r := <-results:
+			if r.status != http.StatusOK || r.body != "ok" {
+				t.Errorf("admitted request = %d %q, want 200 ok", r.status, r.body)
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("admitted request did not complete after release")
+		}
+	}
+}

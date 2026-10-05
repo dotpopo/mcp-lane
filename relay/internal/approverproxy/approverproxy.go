@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 // maxBody bounds an approver API request: a claim carries two public keys

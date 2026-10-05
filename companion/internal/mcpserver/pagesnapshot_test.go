@@ -9,11 +9,11 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/nextstep"
-	"github.com/leazoot/fylane/companion/internal/pagesnap"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/nextstep"
+	"github.com/dotpopo/mcp-lane/companion/internal/pagesnap"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // fakeSnapshots stands in for the browser: the browser path itself is

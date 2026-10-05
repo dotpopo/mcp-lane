@@ -10,7 +10,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 // providerStamp names the calling platform on every request, the way the

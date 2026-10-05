@@ -1008,3 +1008,79 @@ func TestExpiredArtifacts(t *testing.T) {
 		t.Fatal("expired access token accepted")
 	}
 }
+
+// The default access-token lifetime is 30 minutes, and a token issued under
+// it stops validating past the window. The store clock is time-travelled:
+// nothing here sleeps out a production lifetime.
+func TestAccessTokenExpiresAfterDefaultTTL(t *testing.T) {
+	if DefaultAccessTokenTTL != 30*time.Minute {
+		t.Fatalf("DefaultAccessTokenTTL = %s, want 30m", DefaultAccessTokenTTL)
+	}
+	s := &Server{Store: NewMemoryStore()}
+	rec := httptest.NewRecorder()
+	s.issueTokens(rec, "dev_1", "cl_1", "fam_1")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("issueTokens = %d", rec.Code)
+	}
+	var tok struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &tok); err != nil || tok.AccessToken == "" {
+		t.Fatalf("token response = %q, %v", rec.Body.String(), err)
+	}
+	if tok.ExpiresIn != int(DefaultAccessTokenTTL.Seconds()) {
+		t.Fatalf("expires_in = %d, want %d", tok.ExpiresIn, int(DefaultAccessTokenTTL.Seconds()))
+	}
+	hashed := hashSecret(tok.AccessToken)
+	// Just inside the window the token validates; just past it, it is gone.
+	if _, err := s.Store.GetAccessToken(hashed, time.Now().Add(DefaultAccessTokenTTL-time.Second)); err != nil {
+		t.Fatalf("token rejected inside its TTL: %v", err)
+	}
+	if _, err := s.Store.GetAccessToken(hashed, time.Now().Add(DefaultAccessTokenTTL+time.Second)); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("token accepted past its TTL: %v", err)
+	}
+}
+
+// A configured override changes the issued lifetime, and ParseAccessTTL
+// rejects anything unparseable or below the 5-minute floor instead of
+// clamping it quietly.
+func TestAccessTokenTTLOverrideAndFloor(t *testing.T) {
+	s := &Server{Store: NewMemoryStore(), AccessTokenTTL: time.Hour}
+	rec := httptest.NewRecorder()
+	s.issueTokens(rec, "dev_1", "cl_1", "fam_1")
+	var tok struct {
+		ExpiresIn int `json:"expires_in"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &tok); err != nil {
+		t.Fatal(err)
+	}
+	if tok.ExpiresIn != 3600 {
+		t.Fatalf("expires_in = %d, want 3600", tok.ExpiresIn)
+	}
+
+	cases := []struct {
+		raw  string
+		want time.Duration
+		ok   bool
+	}{
+		{"30m", 30 * time.Minute, true},
+		{"5m", 5 * time.Minute, true},
+		{"2h", 2 * time.Hour, true},
+		{"4m59s", 0, false},
+		{"0s", 0, false},
+		{"-1m", 0, false},
+		{"30", 0, false},
+		{"bogus", 0, false},
+		{"", 0, false},
+	}
+	for _, tc := range cases {
+		got, err := ParseAccessTTL(tc.raw)
+		if tc.ok && (err != nil || got != tc.want) {
+			t.Errorf("ParseAccessTTL(%q) = %s, %v; want %s, nil", tc.raw, got, err, tc.want)
+		}
+		if !tc.ok && err == nil {
+			t.Errorf("ParseAccessTTL(%q) = %s, nil; want an error", tc.raw, got)
+		}
+	}
+}

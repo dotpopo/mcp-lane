@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/tunnelget"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelget"
 )
 
 func TestProviderArgsAndParsing(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/encoding/unicode"
 
-	"github.com/leazoot/fylane/companion/internal/textenc"
+	"github.com/dotpopo/mcp-lane/companion/internal/textenc"
 )
 
 func writeTree(t *testing.T, root string, files map[string]string) {

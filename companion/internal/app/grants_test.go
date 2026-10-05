@@ -5,12 +5,12 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/mcpserver"
-	"github.com/leazoot/fylane/companion/internal/pagesnap"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/mcpserver"
+	"github.com/dotpopo/mcp-lane/companion/internal/pagesnap"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 type grantSinks struct {

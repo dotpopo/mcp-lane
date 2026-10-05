@@ -2,7 +2,9 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	goruntime "runtime"
+	"time"
 
 	"fyne.io/systray"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -25,7 +27,12 @@ var trayIcon []byte
 //go:embed trayicon.ico
 var trayIconWindows []byte
 
-// startTray puts Fylane in the system tray using the spike-verified
+// trayPending is the "N requests waiting" row. Text only: the macOS template
+// icon has no count dot matrix to draw into, and a second icon file for a
+// badge would be a new asset for a number the words already carry.
+var trayPending *systray.MenuItem
+
+// startTray puts mcp-lane in the system tray using the spike-verified
 // external-loop pattern and returns a stop function. The tray lives in the
 // UI shell; the Core keeps serving even if the shell (and its tray) dies.
 func startTray(app *App) func() {
@@ -38,17 +45,18 @@ func startTray(app *App) func() {
 		} else {
 			systray.SetTemplateIcon(trayIcon, trayIcon)
 		}
-		systray.SetTooltip("Fylane")
-		open := systray.AddMenuItem("Open Fylane", "Show the Fylane window")
+		systray.SetTooltip("mcp-lane")
+		open := systray.AddMenuItem("Open mcp-lane", "Show the mcp-lane window")
+		trayPending = systray.AddMenuItem("No requests waiting", "Show the mcp-lane window")
 		systray.AddSeparator()
-		quit := systray.AddMenuItem("Quit Fylane UI", "Close the UI shell (the Core keeps running)")
+		quit := systray.AddMenuItem("Quit mcp-lane UI", "Close the UI shell (the Core keeps running)")
 		go func() {
 			for {
 				select {
 				case <-open.ClickedCh:
-					if app.ctx != nil {
-						runtime.WindowShow(app.ctx)
-					}
+					app.showWindow()
+				case <-trayPending.ClickedCh:
+					app.showWindow()
 				case <-quit.ClickedCh:
 					if app.ctx != nil {
 						runtime.Quit(app.ctx)
@@ -56,7 +64,39 @@ func startTray(app *App) func() {
 				}
 			}
 		}()
+		// The tray stands outside the window, so it reads the Core itself
+		// rather than waiting for the frontend to tell it — a hidden window
+		// still polls, and the count survives a closed one.
+		go pollTrayPending(app)
 	}, func() {})
 	start()
 	return stop
+}
+
+// pollTrayPending keeps the tray's pending row honest: how many approvals
+// are held, re-read every few seconds. Unknown (the Core is not answering)
+// keeps the last title rather than flashing one.
+func pollTrayPending(app *App) {
+	// Once at startup, so the row does not sit on its placeholder text for
+	// a whole interval while the Core may already be answering.
+	setTrayPending(app.pendingCount())
+	tick := time.NewTicker(5 * time.Second)
+	defer tick.Stop()
+	for range tick.C {
+		setTrayPending(app.pendingCount())
+	}
+}
+
+func setTrayPending(n int) {
+	if trayPending == nil || n < 0 {
+		return
+	}
+	switch {
+	case n == 0:
+		trayPending.SetTitle("No requests waiting")
+	case n == 1:
+		trayPending.SetTitle("1 request waiting — open")
+	default:
+		trayPending.SetTitle(fmt.Sprintf("%d requests waiting — open", n))
+	}
 }

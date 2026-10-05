@@ -23,6 +23,13 @@ const (
 	pingInterval          = 30 * time.Second
 )
 
+// DefaultMaxConcurrent caps how many tunneled requests the Companion serves
+// at once when Client.MaxConcurrent is unset. Thirty-two concurrent tool
+// calls already exceed any interactive session; beyond that the caller is
+// either broken or hostile, and each admitted request holds a handler
+// goroutine plus its buffers until it finishes.
+const DefaultMaxConcurrent = 32
+
 // Client is the Companion side of the tunnel: it dials the relay outbound
 // (WSS), answers tunneled requests with Handler, and reconnects with backoff
 // until ctx is done. The Companion never listens for inbound connections.
@@ -43,6 +50,14 @@ type Client struct {
 	// inbox holds a long-poll open for longer than the interval) answers
 	// with its own headers in its own time.
 	EagerSSE bool
+
+	// MaxConcurrent caps how many tunneled requests are served at once.
+	// Zero or negative means DefaultMaxConcurrent. A request arriving past
+	// the cap is refused at once with a 503 carrying a JSON error (see
+	// answerOverloaded) — never queued without bound and never dropped
+	// silently, so the caller can retry or shed load instead of waiting
+	// behind handlers that may block on a human approval.
+	MaxConcurrent int
 
 	// connected reflects whether a relay connection is currently up; read
 	// through Connected() (e.g. by the local status API).
@@ -129,6 +144,7 @@ func (c *Client) serveOnce(ctx context.Context) (bool, error) {
 	}()
 
 	var writeMu sync.Mutex
+	sem := make(chan struct{}, c.maxConcurrent())
 	for {
 		_, data, err := ws.Read(connCtx)
 		if err != nil {
@@ -138,7 +154,58 @@ func (c *Client) serveOnce(ctx context.Context) (bool, error) {
 		if err := json.Unmarshal(data, &f); err != nil || f.Type != FrameRequest {
 			continue
 		}
-		go c.answer(connCtx, ws, &writeMu, &f)
+		select {
+		case sem <- struct{}{}:
+			go func(f *Frame) {
+				defer func() { <-sem }()
+				c.answer(connCtx, ws, &writeMu, f)
+			}(&f)
+		default:
+			// Past the cap: refuse now with a 503 the relay forwards
+			// verbatim, so the caller sees a retryable refusal instead of
+			// queueing behind an unbounded backlog. Its own goroutine
+			// keeps the read loop flowing; the reply is three small
+			// frames and holds no handler resources.
+			go c.answerOverloaded(connCtx, ws, &writeMu, f.ID)
+		}
+	}
+}
+
+// maxConcurrent returns the effective per-connection request cap.
+func (c *Client) maxConcurrent() int {
+	if c.MaxConcurrent > 0 {
+		return c.MaxConcurrent
+	}
+	return DefaultMaxConcurrent
+}
+
+// answerOverloaded refuses one request that arrived past MaxConcurrent. The
+// protocol has no dedicated "busy" frame, so the refusal uses the closest
+// thing it has: an ordinary 503 response (header, JSON body, end marker),
+// which the relay forwards to the caller verbatim. A 503 with this body IS
+// the overload signal — documented here so both ends read it the same way.
+func (c *Client) answerOverloaded(ctx context.Context, ws *websocket.Conn, writeMu *sync.Mutex, id uint64) {
+	frames := []*Frame{
+		{Type: FrameResponseHeader, ID: id, Status: http.StatusServiceUnavailable,
+			Header: http.Header{"Content-Type": {"application/json"}}},
+		{Type: FrameResponseChunk, ID: id, Body: []byte(`{"error":"companion overloaded; retry shortly"}`)},
+		{Type: FrameResponseEnd, ID: id},
+	}
+	for _, f := range frames {
+		data, err := json.Marshal(f)
+		if err != nil {
+			log.Printf("tunnel: failed to encode overload refusal: %v", err)
+			return
+		}
+		writeMu.Lock()
+		writeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+		err = ws.Write(writeCtx, websocket.MessageText, data)
+		cancel()
+		writeMu.Unlock()
+		if err != nil {
+			log.Printf("tunnel: failed to send overload refusal: %v", err)
+			return
+		}
 	}
 }
 

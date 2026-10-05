@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/directsrv"
+	"github.com/dotpopo/mcp-lane/companion/internal/directsrv"
 )
 
 // `share` has no window to poll, so the daemon tells it where the machine

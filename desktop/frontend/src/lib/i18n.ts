@@ -51,15 +51,15 @@ export const DICT = {
   // The Node dock (Fylane-V3 board 03) and the one line the title bar keeps.
   "shell.navOpen": { en: "Open navigation", zh: "展开导航" },
   "shell.navClose": { en: "Close navigation", zh: "收起导航" },
-  "shell.titleCalm": { en: "Fylane · lane clear", zh: "Fylane · 通道畅通" },
-  "shell.titlePaused": { en: "Fylane · paused", zh: "Fylane · 已暂停" },
-  "shell.titleRunning": { en: "Fylane · running a command", zh: "Fylane · 正在执行" },
-  "shell.titleHeld_one": { en: "Fylane · 1 request waiting", zh: "Fylane · 1 个请求等待批准" },
+  "shell.titleCalm": { en: "mcp-lane · lane clear", zh: "mcp-lane · 通道畅通" },
+  "shell.titlePaused": { en: "mcp-lane · paused", zh: "mcp-lane · 已暂停" },
+  "shell.titleRunning": { en: "mcp-lane · running a command", zh: "mcp-lane · 正在执行" },
+  "shell.titleHeld_one": { en: "mcp-lane · 1 request waiting", zh: "mcp-lane · 1 个请求等待批准" },
   "shell.titleHeld_other": {
-    en: "Fylane · {n} requests waiting",
-    zh: "Fylane · {n} 个请求等待批准",
+    en: "mcp-lane · {n} requests waiting",
+    zh: "mcp-lane · {n} 个请求等待批准",
   },
-  "shell.titleOffline": { en: "Fylane · not running", zh: "Fylane · 未运行" },
+  "shell.titleOffline": { en: "mcp-lane · not running", zh: "mcp-lane · 未运行" },
   "shell.resume": { en: "Resume lane", zh: "恢复通道" },
   "shell.pause": { en: "Pause lane", zh: "暂停通道" },
   // Windows caption buttons. macOS draws its own, so these are never read
@@ -73,6 +73,10 @@ export const DICT = {
   "shell.errRevoke": { en: "Could not withdraw the folder.", zh: "没能收回这个目录。" },
   "shell.errLaneState": { en: "Could not change the lane state.", zh: "没能改变通道状态。" },
   "shell.errApprove": { en: "Could not approve.", zh: "没能放行。" },
+  "shell.errBulk": {
+    en: "Stopped: {done} approved, request {failed} failed ({reason}). Already-approved requests stay approved.",
+    zh: "已停下：已批准 {done} 条，{failed} 失败（{reason}）。已批准的不回滚。",
+  },
   "shell.errReject": { en: "Could not reject.", zh: "没能拒绝。" },
   "shell.errRollback": { en: "Could not roll back.", zh: "没能回滚。" },
   "shell.errAccept": { en: "Could not record the acceptance.", zh: "没能记下验收。" },
@@ -219,6 +223,19 @@ export const DICT = {
   "laneV3.passedToday": { en: "PASSED TODAY", zh: "今日已通过" },
   "laneV3.rejectedToday": { en: "REJECTED", zh: "已拒绝" },
   "laneV3.runningOn": { en: "Running on {machine}", zh: "正在 {machine} 上执行" },
+  "laneV3.riskHigh": {
+    en: "High risk — check every line before approving",
+    zh: "高风险 —— 批准前请逐行检查",
+  },
+  "laneV3.riskMedium": {
+    en: "Medium risk — worth a second look",
+    zh: "中风险 —— 值得再看一眼",
+  },
+  "laneV3.riskLow": { en: "Low risk — routine change", zh: "低风险 —— 常规变更" },
+  "laneV3.queuePos": { en: "{i} of {n}", zh: "第 {i} / 共 {n} 条" },
+  "laneV3.prev": { en: "Previous", zh: "上一条" },
+  "laneV3.next": { en: "Next", zh: "下一条" },
+  "laneV3.approveAll": { en: "Approve all {n}", zh: "全部批准（{n} 条）" },
 
   // ── remote machines ────────────────────────────────────────────────
   // The rail's second anchor. A machine is a computer Fylane reaches over
@@ -813,6 +830,7 @@ export const DICT = {
   // ⌘K items (Desktop v2 §8). Nothing here opens a screen the product no
   // longer has.
   "cmd.approve": { en: "Allow the current request", zh: "放行当前请求" },
+  "cmd.reject": { en: "Reject the current request", zh: "拒绝当前请求" },
   "cmd.workspace": { en: "Switch workspace", zh: "切换工作区" },
   "cmd.resume": { en: "Resume Fylane", zh: "恢复 Fylane" },
   "cmd.pause": { en: "Pause Fylane", zh: "暂停 Fylane" },

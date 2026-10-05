@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
 )
 
 func TestDelegationGrantsAreListedWithTheirClockAndWithdrawn(t *testing.T) {

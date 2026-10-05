@@ -7,14 +7,14 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/cmdrule"
-	"github.com/leazoot/fylane/companion/internal/mcpgate"
-	"github.com/leazoot/fylane/companion/internal/nextstep"
-	"github.com/leazoot/fylane/companion/internal/redact"
-	"github.com/leazoot/fylane/companion/internal/txn"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdrule"
+	"github.com/dotpopo/mcp-lane/companion/internal/mcpgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/nextstep"
+	"github.com/dotpopo/mcp-lane/companion/internal/redact"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // The local MCP gateway. One meta-tool rather than N proxied tools

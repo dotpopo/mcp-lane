@@ -1,4 +1,4 @@
-module github.com/leazoot/fylane
+module github.com/dotpopo/mcp-lane
 
 go 1.25.6
 

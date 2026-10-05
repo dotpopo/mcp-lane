@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/codeagent"
-	"github.com/leazoot/fylane/companion/internal/redact"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/tasks"
-	"github.com/leazoot/fylane/companion/internal/txn"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/codeagent"
+	"github.com/dotpopo/mcp-lane/companion/internal/redact"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/tasks"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // capturingAudit records what reached the audit layer.

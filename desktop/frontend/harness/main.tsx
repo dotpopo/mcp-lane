@@ -400,6 +400,7 @@ function Board() {
               onGoto={noop}
               onClose={noop}
               onApprove={noop}
+              onReject={noop}
               onStopTask={noop}
               onTogglePause={noop}
               onChooseWorkspace={noop}

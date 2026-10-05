@@ -15,8 +15,8 @@ import (
 	"time"
 	"unicode/utf16"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
 )
 
 // handshakeTimeout bounds initialization. A server that never answers

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
 )
 
 // DefaultIdleTimeout is how long a language server may sit unused before it is

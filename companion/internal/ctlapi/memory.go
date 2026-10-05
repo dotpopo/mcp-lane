@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // The memory view (Fylane-V3 board 17). What a platform wrote through the

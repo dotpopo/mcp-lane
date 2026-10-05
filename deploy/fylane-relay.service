@@ -10,8 +10,8 @@
 # terminated by whatever already renews certificates on this host (Caddy,
 # nginx, Traefik); the relay listens on loopback only.
 [Unit]
-Description=Fylane relay
-Documentation=https://github.com/fylane/fylane
+Description=mcp-lane relay
+Documentation=https://github.com/dotpopo/mcp-lane
 After=network-online.target
 Wants=network-online.target
 

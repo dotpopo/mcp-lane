@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/machines"
+	"github.com/dotpopo/mcp-lane/companion/internal/machines"
 )
 
 // stubMachines is a MachineControl with one online machine whose control

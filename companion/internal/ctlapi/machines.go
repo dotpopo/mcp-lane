@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/leazoot/fylane/companion/internal/machines"
+	"github.com/dotpopo/mcp-lane/companion/internal/machines"
 )
 
 // MachineControl is the remote machine list and the way through to each

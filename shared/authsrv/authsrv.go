@@ -36,18 +36,29 @@ import (
 
 // Lifetimes follow current OAuth 2.1 / RFC 9700 practice.
 const (
-	pairingCodeTTL = 10 * time.Minute
-	authRequestTTL = 10 * time.Minute
-	authCodeTTL    = 5 * time.Minute
-	// accessTokenTTL was 15 minutes once. Real platforms turned out
-	// not to refresh on their own — three-platform testing produced a 401
-	// twenty-four seconds after expiry and not one refresh_token grant in
-	// the whole session — so the short lifetime did not buy security, it
-	// bought a connector that appeared to break every quarter hour. Two
-	// hours covers a working session; rotation still does the real work.
-	accessTokenTTL  = 2 * time.Hour
+	pairingCodeTTL  = 10 * time.Minute
+	authRequestTTL  = 10 * time.Minute
+	authCodeTTL     = 5 * time.Minute
 	refreshTokenTTL = 30 * 24 * time.Hour
 )
+
+// DefaultAccessTokenTTL is the lifetime of an issued platform access token
+// when the server was not configured otherwise. Thirty minutes bounds the
+// replay window of a stolen token while covering a working session.
+//
+// Known limit, stated plainly: real platforms turned out not to refresh on
+// their own — three-platform testing once produced a 401 seconds after
+// expiry and not one refresh_token grant in the whole session. A platform
+// that never sends a refresh_token grant therefore sees 401s after this
+// window until it reconnects; the rotating refresh token is the mitigation
+// for platforms that implement it. See also SECURITY.md ("Known limits").
+const DefaultAccessTokenTTL = 30 * time.Minute
+
+// MinAccessTokenTTL is the floor for the access-token lifetime. Anything
+// below it is rejected at startup (see ParseAccessTTL) rather than silently
+// clamped: a shorter lifetime buys little once rotation exists, and a
+// misconfigured flag should fail loudly instead of churning grants.
+const MinAccessTokenTTL = 5 * time.Minute
 
 // Server is the authorization server. Issuer is the public base URL
 // (https://relay.example); Store is required.
@@ -72,6 +83,13 @@ type Server struct {
 	// reason — every session for that client is gone until it authorizes
 	// again — is knowable nowhere else.
 	OnFamilyRevoked func(clientID string)
+	// AccessTokenTTL overrides the lifetime of issued platform access
+	// tokens. Zero means DefaultAccessTokenTTL. Values below
+	// MinAccessTokenTTL are rejected at process startup via ParseAccessTTL
+	// (the relay's -access-ttl flag does this); in-process constructors
+	// must apply the same check themselves rather than setting a shorter
+	// lifetime quietly.
+	AccessTokenTTL time.Duration
 }
 
 // DefaultCompanionOrigin is where a Companion listens unless told otherwise
@@ -1226,13 +1244,14 @@ func (s *Server) tokenFromRefresh(w http.ResponseWriter, r *http.Request) {
 func (s *Server) issueTokens(w http.ResponseWriter, deviceID, clientID, family string) {
 	// Only hashes reach the store; the raw tokens exist in this response
 	// alone, so a compromised metadata store yields no live credentials.
+	ttl := s.accessTTL()
 	rawAccess := "at_" + randomToken(32)
 	rawRefresh := "rt_" + randomToken(32)
 	access := &AccessToken{
 		Token:     hashSecret(rawAccess),
 		DeviceID:  deviceID,
 		ClientID:  clientID,
-		ExpiresAt: time.Now().Add(accessTokenTTL),
+		ExpiresAt: time.Now().Add(ttl),
 	}
 	refresh := &RefreshToken{
 		Token:     hashSecret(rawRefresh),
@@ -1252,9 +1271,35 @@ func (s *Server) issueTokens(w http.ResponseWriter, deviceID, clientID, family s
 	writeJSON(w, http.StatusOK, map[string]any{
 		"access_token":  rawAccess,
 		"token_type":    "Bearer",
-		"expires_in":    int(accessTokenTTL.Seconds()),
+		"expires_in":    int(ttl.Seconds()),
 		"refresh_token": rawRefresh,
 	})
+}
+
+// accessTTL returns the effective platform access-token lifetime: the
+// configured override when one is set, the default otherwise. The floor is
+// enforced at startup by ParseAccessTTL, not here, so tests can exercise
+// expiry without waiting out a production lifetime.
+func (s *Server) accessTTL() time.Duration {
+	if s.AccessTokenTTL > 0 {
+		return s.AccessTokenTTL
+	}
+	return DefaultAccessTokenTTL
+}
+
+// ParseAccessTTL parses a configured access-token lifetime (the relay's
+// -access-ttl flag) and enforces the floor. A value below MinAccessTokenTTL
+// is a misconfiguration, not something to clamp quietly, so it is an error;
+// so is anything time.ParseDuration rejects. Callers fail startup on error.
+func ParseAccessTTL(raw string) (time.Duration, error) {
+	d, err := time.ParseDuration(raw)
+	if err != nil {
+		return 0, fmt.Errorf("invalid access-token TTL %q: %w", raw, err)
+	}
+	if d < MinAccessTokenTTL {
+		return 0, fmt.Errorf("access-token TTL %s is below the minimum %s", d, MinAccessTokenTTL)
+	}
+	return d, nil
 }
 
 // --- Device pairing ---

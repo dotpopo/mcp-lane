@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/readbox"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 type stubGate struct{ rung cmdgate.Rung }

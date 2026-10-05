@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/routerule"
+	"github.com/dotpopo/mcp-lane/companion/internal/routerule"
 )
 
 func rule(id, dest string) routerule.Rule {

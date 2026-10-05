@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/autostart"
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/ctlapi"
-	"github.com/leazoot/fylane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/autostart"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/ctlapi"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
 )
 
 // The settings page's execution preferences. They are stored in config.json

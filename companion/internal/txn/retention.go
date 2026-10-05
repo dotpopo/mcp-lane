@@ -9,7 +9,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // defaultMaxBackupBytes is the backup-area size budget (7 days or

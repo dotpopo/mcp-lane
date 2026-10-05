@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // The plan is the half of a harness a web chat does not have. A turn that

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/txn"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // A conversation on a platform starts from nothing: the model has no idea

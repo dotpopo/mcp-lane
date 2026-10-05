@@ -10,8 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/leazoot/fylane/companion/internal/sandbox"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/sandbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // Workspace is a runtime handle for a single sandboxed directory. Its policy

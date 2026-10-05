@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/routerule"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/routerule"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // memRules is an in-memory RuleStore; the persistence itself is covered in

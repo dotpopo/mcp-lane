@@ -17,6 +17,7 @@ export interface CommandPaletteProps {
   onGoto: (screen: "lane" | "tasks" | "memory" | "settings") => void;
   onClose: () => void;
   onApprove: (changeSetID: string) => void;
+  onReject: (changeSetID: string) => void;
   onStopTask: (taskID: string) => void;
   onTogglePause: () => void;
   onChooseWorkspace: () => void;
@@ -37,6 +38,7 @@ export function CommandPalette({
   onGoto,
   onClose,
   onApprove,
+  onReject,
   onStopTask,
   onTogglePause,
   onChooseWorkspace,
@@ -53,16 +55,28 @@ export function CommandPalette({
     if (!snapshot.online) {
       out.push({ key: "start", label: t("cmd.start"), hint: t("cmd.hintOffline"), run: onStartCore });
     }
-    // A held request is what the platform is blocked on, so it goes first.
-    const held = snapshot.approvals[0];
-    if (held) {
+    // Held requests are what the platform is blocked on, so they go first —
+    // every one of them, each with both answers. The hint tells same-word
+    // rows apart: whose request it is, and which one it is.
+    const held = snapshot.approvals;
+    held.forEach((a, i) => {
+      const hint =
+        held.length > 1
+          ? `${a.provider} · ${i + 1}/${held.length}`
+          : a.provider;
       out.push({
-        key: "approve",
+        key: `approve:${a.change_set_id}`,
         label: t("cmd.approve"),
-        hint: held.provider,
-        run: () => onApprove(held.change_set_id),
+        hint,
+        run: () => onApprove(a.change_set_id),
       });
-    }
+      out.push({
+        key: `reject:${a.change_set_id}`,
+        label: t("cmd.reject"),
+        hint,
+        run: () => onReject(a.change_set_id),
+      });
+    });
     out.push({
       key: "workspace",
       label: t("cmd.workspace"),
@@ -93,7 +107,7 @@ export function CommandPalette({
       });
     }
     return out;
-  }, [snapshot, tasks, canStop, tr, onGoto, onApprove, onStopTask, onStartCore, onTogglePause, onChooseWorkspace]);
+  }, [snapshot, tasks, canStop, tr, onGoto, onApprove, onReject, onStopTask, onStartCore, onTogglePause, onChooseWorkspace]);
 
   const shown = items.filter((i) => i.label.toLowerCase().includes(query.trim().toLowerCase()));
   const at = Math.min(cursor, Math.max(shown.length - 1, 0));

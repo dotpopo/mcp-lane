@@ -13,7 +13,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/devicecred"
+	"github.com/dotpopo/mcp-lane/companion/internal/devicecred"
 )
 
 // Report is the outcome of a relay preflight.

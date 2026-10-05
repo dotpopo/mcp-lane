@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/shared/authsrv"
+	"github.com/dotpopo/mcp-lane/shared/authsrv"
 )
 
 // testDSN returns the test database DSN. Tests are skipped when PostgreSQL

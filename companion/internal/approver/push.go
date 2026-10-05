@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/webpush"
+	"github.com/dotpopo/mcp-lane/companion/internal/webpush"
 )
 
 // Pusher wakes a phone through its browser's push service. Implemented by

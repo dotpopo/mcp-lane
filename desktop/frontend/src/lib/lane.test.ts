@@ -8,6 +8,8 @@ import {
   dayTally,
   laneBoard,
   pendingInfo,
+  pendingList,
+  riskOf,
   rowNotes,
   shortPath,
   taskDot,
@@ -112,6 +114,23 @@ describe("pendingInfo", () => {
     const a = approval();
     delete (a as { kind?: unknown }).kind;
     expect(pendingInfo([a], EN)!.kind).toBe("write");
+  });
+
+  it("keeps every held request, not just the first", () => {
+    const list = pendingList(
+      [
+        approval({ change_set_id: "chg_first" }),
+        approval({ change_set_id: "chg_second" }),
+      ],
+      EN,
+    );
+    expect(list.map((p) => p.changeSetID)).toEqual([
+      "chg_first",
+      "chg_second",
+    ]);
+    // And the old single view is still the head of the queue.
+    expect(pendingInfo([approval({ change_set_id: "chg_first" })], EN)!.changeSetID).toBe("chg_first");
+    expect(pendingInfo([], EN)).toBeNull();
   });
 });
 
@@ -329,6 +348,42 @@ describe("dayTally", () => {
 
   it("ignores a timestamp it cannot read rather than counting it as today", () => {
     expect(dayTally([task({ started_at: "" })], [], noon).passed).toBe(0);
+  });
+});
+
+describe("the risk glance", () => {
+  const file = (over: Partial<PendingFile> = {}): PendingFile => ({
+    op: "M",
+    path: "src/auth.ts",
+    recursive: false,
+    sensitive: false,
+    beyondUndo: false,
+    ...over,
+  });
+
+  it("calls an ordinary write low", () => {
+    expect(riskOf([file()])).toBe("low");
+  });
+
+  it("calls a sensitive file high, and a recursive delete high", () => {
+    expect(riskOf([file({ sensitive: true })])).toBe("high");
+    expect(riskOf([file({ recursive: true })])).toBe("high");
+  });
+
+  it("grades a wide or far-reaching change medium", () => {
+    // Eight ordinary files, or one file used in three other places: worth
+    // a second look, not a warning.
+    expect(
+      riskOf(
+        Array.from({ length: 8 }, (_, i) => file({ path: `f${i}.ts` })),
+      ),
+    ).toBe("medium");
+    expect(riskOf([file({ impact: { callers: 3 } })])).toBe("medium");
+  });
+
+  it("says nothing it was not told — unmeasured reach is not a signal", () => {
+    // No flags and nobody measured anything: low, not medium.
+    expect(riskOf([file(), file()])).toBe("low");
   });
 });
 

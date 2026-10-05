@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // execAuditor persists every command attempt. It is the only

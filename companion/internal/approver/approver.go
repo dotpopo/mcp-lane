@@ -41,8 +41,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 const (

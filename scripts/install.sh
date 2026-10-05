@@ -1,7 +1,7 @@
 #!/bin/sh
-# Installs the Fylane companion from the latest GitHub release.
+# Installs the mcp-lane companion from the latest GitHub release.
 #
-#   curl -fsSL https://raw.githubusercontent.com/leazoot/fylane/main/scripts/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/dotpopo/mcp-lane/main/scripts/install.sh | sh
 #
 # What it does, in order: work out the platform, download the release
 # archive and the checksum manifest, refuse anything whose SHA-256 does not
@@ -14,7 +14,7 @@
 #   FYLANE_BIN=~/.local/bin where the symlink goes
 set -eu
 
-repo=leazoot/fylane
+repo=dotpopo/mcp-lane
 home=${FYLANE_HOME:-$HOME/.fylane}
 
 os=$(uname -s | tr '[:upper:]' '[:lower:]')

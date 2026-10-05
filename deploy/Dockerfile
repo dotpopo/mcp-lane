@@ -13,7 +13,7 @@ ARG VERSION=0.0.0-selfhosted
 # CGO stays off: the SQLite driver is pure Go, which is what keeps this a
 # single binary on any base image.
 RUN CGO_ENABLED=0 go build -trimpath \
-    -ldflags "-s -w -X fylane/shared/buildinfo.Version=${VERSION}" \
+    -ldflags "-s -w -X github.com/dotpopo/mcp-lane/shared/buildinfo.Version=${VERSION}" \
     -o /out/fylane-relay ./relay/cmd/relay
 
 FROM alpine:3.21

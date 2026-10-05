@@ -20,7 +20,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/leazoot/fylane/companion/internal/tunnelget"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelget"
 )
 
 // Kind names a tunnel provider in configuration and on the wire.

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // The shapes we claim to read. Each of these is what a real toolchain prints;

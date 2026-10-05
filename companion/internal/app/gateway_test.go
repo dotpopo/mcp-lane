@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/ctlapi"
-	"github.com/leazoot/fylane/companion/internal/lsp"
-	"github.com/leazoot/fylane/companion/internal/mcpgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/ctlapi"
+	"github.com/dotpopo/mcp-lane/companion/internal/lsp"
+	"github.com/dotpopo/mcp-lane/companion/internal/mcpgate"
 )
 
 // What the settings page is allowed to learn about a provider: its name and

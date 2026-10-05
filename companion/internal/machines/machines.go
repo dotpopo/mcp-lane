@@ -805,7 +805,7 @@ func (l *link) probe(ctx context.Context) (probeResult, error) {
 // installURL is where the install script for a pinned tag lives. The tag is
 // this Companion's own version, never anything a caller supplied.
 func installURL(tag string) string {
-	return "https://raw.githubusercontent.com/leazoot/fylane/" + tag + "/scripts/install.sh"
+	return "https://raw.githubusercontent.com/dotpopo/mcp-lane/" + tag + "/scripts/install.sh"
 }
 
 func (l *link) doInstall(ctx context.Context) error {

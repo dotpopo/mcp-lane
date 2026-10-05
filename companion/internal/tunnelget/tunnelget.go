@@ -47,7 +47,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/urlfetch"
+	"github.com/dotpopo/mcp-lane/companion/internal/urlfetch"
 )
 
 // MaxBytes caps a download. Larger than urlfetch's cap because these are

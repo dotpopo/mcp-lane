@@ -16,11 +16,11 @@ import (
 
 	"github.com/aymanbagabas/go-udiff"
 
-	"github.com/leazoot/fylane/companion/internal/textenc"
+	"github.com/dotpopo/mcp-lane/companion/internal/textenc"
 
-	"github.com/leazoot/fylane/companion/internal/sandbox"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/sandbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 const (

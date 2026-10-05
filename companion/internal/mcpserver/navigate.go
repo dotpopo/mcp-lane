@@ -8,11 +8,11 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/companion/internal/lsp"
-	"github.com/leazoot/fylane/companion/internal/nextstep"
-	"github.com/leazoot/fylane/companion/internal/sandbox"
-	"github.com/leazoot/fylane/companion/internal/txn"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/lsp"
+	"github.com/dotpopo/mcp-lane/companion/internal/nextstep"
+	"github.com/dotpopo/mcp-lane/companion/internal/sandbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // code_navigate. Three questions a language server can answer exactly

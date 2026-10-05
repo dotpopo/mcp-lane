@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/pairclaim"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/shared/authsrv"
+	"github.com/dotpopo/mcp-lane/companion/internal/pairclaim"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/shared/authsrv"
 )
 
 // seenInterval bounds how often one provider's row is rewritten. A list that

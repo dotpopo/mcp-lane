@@ -3,7 +3,7 @@ package directsrv
 import (
 	"testing"
 
-	"github.com/leazoot/fylane/shared/authsrv"
+	"github.com/dotpopo/mcp-lane/shared/authsrv"
 )
 
 // A client id that resolves to nothing must produce no report at all.

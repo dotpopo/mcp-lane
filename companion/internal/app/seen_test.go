@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // The lane's "connected" list is read from the connectors table. Before this

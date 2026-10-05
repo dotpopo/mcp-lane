@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/sandbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/sandbox"
 )
 
 func TestRunCapturesOutputAndExitCode(t *testing.T) {

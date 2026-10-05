@@ -42,9 +42,9 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/readbox"
-	"github.com/leazoot/fylane/shared/buildinfo"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/shared/buildinfo"
 )
 
 // Trust is how much authority one provider's tools carry.

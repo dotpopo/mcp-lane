@@ -7,8 +7,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/companion/internal/sandbox"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/sandbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // editOp is one quick edit applied to the file's current text. Edits are

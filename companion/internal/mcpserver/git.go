@@ -10,11 +10,11 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/cmdrule"
-	"github.com/leazoot/fylane/companion/internal/redact"
-	"github.com/leazoot/fylane/companion/internal/sandbox"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdrule"
+	"github.com/dotpopo/mcp-lane/companion/internal/redact"
+	"github.com/dotpopo/mcp-lane/companion/internal/sandbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // git_query answers the questions a model asks before and after it edits:

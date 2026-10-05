@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/shared/authsrv"
-	"github.com/leazoot/fylane/shared/ratelimit"
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/shared/authsrv"
+	"github.com/dotpopo/mcp-lane/shared/ratelimit"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 // Server owns the auth store and the public mux.

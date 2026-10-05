@@ -9,12 +9,12 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/nextstep"
-	"github.com/leazoot/fylane/companion/internal/pagesnap"
-	"github.com/leazoot/fylane/companion/internal/redact"
-	"github.com/leazoot/fylane/companion/internal/txn"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/nextstep"
+	"github.com/dotpopo/mcp-lane/companion/internal/pagesnap"
+	"github.com/dotpopo/mcp-lane/companion/internal/redact"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // page_snapshot lets a model see the page it just changed, instead of

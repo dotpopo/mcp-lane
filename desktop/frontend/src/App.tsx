@@ -317,6 +317,33 @@ function Window({ lang, onLang }: { lang: Lang; onLang(lang: Lang): void }) {
   );
   const onApprove = useCallback((id: string) => decide(id, true), [decide]);
   const onReject = useCallback((id: string) => decide(id, false), [decide]);
+  // Approves the whole queue with the existing single resolve, oldest
+  // first. There is no backend batch endpoint and none is added: the loop
+  // stops at the first failure, says which request failed and how many went
+  // through, and leaves the approved ones approved — no rollback, said
+  // plainly in the message itself.
+  const onApproveAll = useCallback(
+    (ids: string[]) => {
+      void (async () => {
+        let done = 0;
+        for (const id of ids) {
+          const a = snapshot.approvals.find((p) => p.change_set_id === id);
+          try {
+            await coreOf(a?.machine_id).resolveApproval(id, true);
+            done++;
+          } catch (e) {
+            const reason =
+              e instanceof Error ? e.message : t("shell.errApprove");
+            setError(t("shell.errBulk", { done, failed: id, reason }));
+            break;
+          }
+        }
+        if (done === ids.length) setError("");
+        await refresh();
+      })();
+    },
+    [snapshot.approvals, refresh, t],
+  );
   const onStopTask = useCallback(
     (id: string) => {
       const task = tasks.find((k) => k.task_id === id);
@@ -408,6 +435,7 @@ function Window({ lang, onLang }: { lang: Lang; onLang(lang: Lang): void }) {
             canStop={canStopTasks}
             onApprove={onApprove}
             onReject={onReject}
+            onApproveAll={onApproveAll}
             onSelectWorkspace={(id) =>
               void act(
                 () => coreOf(machineID).selectWorkspace(id),
@@ -569,7 +597,7 @@ function Window({ lang, onLang }: { lang: Lang; onLang(lang: Lang): void }) {
               <i />
             </span>
             <span style={{ fontSize: 12.5, color: "var(--fy-muted)" }}>
-              Fylane
+              mcp-lane
             </span>
           </div>
         ) : (
@@ -725,6 +753,10 @@ function Window({ lang, onLang }: { lang: Lang; onLang(lang: Lang): void }) {
           onApprove={(id) => {
             setCommandsOpen(false);
             onApprove(id);
+          }}
+          onReject={(id) => {
+            setCommandsOpen(false);
+            onReject(id);
           }}
           onStopTask={(id) => {
             setCommandsOpen(false);

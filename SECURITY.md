@@ -98,6 +98,14 @@ carries the local API token, and the settings file, are written owner-only
 ACL there, so those files are exactly as private as the data directory that
 holds them — no more.
 
+**Platform access tokens live 30 minutes, and most platforms do not refresh
+them on their own.** A platform that never sends a `refresh_token` grant
+sees `401`s after the access token expires until it reconnects; the rotating
+refresh token is the mitigation for platforms that implement it. A relay
+operator who would rather carry a larger replay window than field those
+reconnects can raise the lifetime with `fylane-relay serve -access-ttl`
+(the floor is 5 minutes, and a shorter value refuses to start).
+
 **No independent audit has been done.** Everything above is the implementer's
 account of the implementer's code. Treat it accordingly until that changes.
 

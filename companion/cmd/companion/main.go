@@ -4,22 +4,23 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/termapprove"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/termapprove"
 	"log/slog"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
-	"github.com/leazoot/fylane/companion/internal/app"
-	"github.com/leazoot/fylane/companion/internal/applog"
-	"github.com/leazoot/fylane/companion/internal/connectinfo"
-	"github.com/leazoot/fylane/companion/internal/crashlog"
-	"github.com/leazoot/fylane/companion/internal/devicecred"
-	"github.com/leazoot/fylane/companion/internal/readbox"
-	"github.com/leazoot/fylane/shared/buildinfo"
+	"github.com/dotpopo/mcp-lane/companion/internal/app"
+	"github.com/dotpopo/mcp-lane/companion/internal/applog"
+	"github.com/dotpopo/mcp-lane/companion/internal/connectinfo"
+	"github.com/dotpopo/mcp-lane/companion/internal/crashlog"
+	"github.com/dotpopo/mcp-lane/companion/internal/devicecred"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/shared/buildinfo"
 )
 
 var version = buildinfo.Version
@@ -46,12 +47,32 @@ func main() {
 	case "serve":
 		if err := serve(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "fylane-companion: %v\n", err)
-			os.Exit(1)
+			os.Exit(exitCodeOf(err))
 		}
 	case "pair":
 		if err := pair(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "fylane-companion: %v\n", err)
-			os.Exit(1)
+			os.Exit(exitCodeOf(err))
+		}
+	case "init":
+		if err := initCmd(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "fylane-companion: %v\n", err)
+			os.Exit(exitCodeOf(err))
+		}
+	case "approvals":
+		if err := approvalsCmd(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "fylane-companion: %v\n", err)
+			os.Exit(exitCodeOf(err))
+		}
+	case "approve":
+		if err := resolveApproval(os.Args[2:], "approve", true); err != nil {
+			fmt.Fprintf(os.Stderr, "fylane-companion: %v\n", err)
+			os.Exit(exitCodeOf(err))
+		}
+	case "reject":
+		if err := resolveApproval(os.Args[2:], "reject", false); err != nil {
+			fmt.Fprintf(os.Stderr, "fylane-companion: %v\n", err)
+			os.Exit(exitCodeOf(err))
 		}
 	case "share":
 		if err := share(os.Args[2:]); err != nil {
@@ -125,12 +146,27 @@ func pair(args []string) error {
 	name := fs.String("name", "", "device display name (default: hostname)")
 	register := fs.Bool("register", false, "force fresh device registration even when credentials exist")
 	dataDir := fs.String("data-dir", "", "data directory (default: user config dir + /fylane)")
+	nonInteractive := fs.Bool("non-interactive", false, "never prompt; fail instead of asking (scripts should always pass this)")
+	ttlFlag := fs.String("ttl", "", "requested pairing-code lifetime, e.g. 10m (the relay's own TTL still caps the effective lifetime)")
+	asJSON := fs.Bool("json", false, "print one JSON document to stdout, human text to stderr")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *relay == "" {
-		return fmt.Errorf("-relay is required")
+		return usageErr("-relay is required")
 	}
+	if *ttlFlag != "" {
+		// Requested only: the relay mints the code with its own TTL, and
+		// the effective lifetime printed below is always the relay's. The
+		// flag exists so a script can state its need (and fail fast on a
+		// typo) rather than parse a duration out of prose.
+		if d, err := time.ParseDuration(*ttlFlag); err != nil || d <= 0 {
+			return usageErr("invalid -ttl %q (try 10m, 1h)", *ttlFlag)
+		}
+	}
+	_ = nonInteractive // pair performs no prompts today; the flag is the
+	// script contract — fail fast rather than ask — and guards any prompt
+	// added later.
 	if *name == "" {
 		if host, err := os.Hostname(); err == nil {
 			*name = host
@@ -141,7 +177,15 @@ func pair(args []string) error {
 		if _, err := devicecred.Register(ctx, *relay, *name); err != nil {
 			return err
 		}
-		fmt.Println("device registered with relay and credentials stored in the OS keychain")
+		// Name the backend honestly: on a headless server without a
+		// keychain the credentials land in the opt-in fallback file
+		// (plaintext at rest), and saying "keychain" would be a lie.
+		if devicecred.Backend(*relay) == "file" {
+			humanf(*asJSON, "device registered with relay and credentials stored in $%s (no keychain on this machine; plaintext at rest — see docs/headless.md)",
+				devicecred.CredentialsFileEnv)
+		} else {
+			humanf(*asJSON, "device registered with relay and credentials stored in the OS keychain")
+		}
 	}
 
 	// Persist the tunnel endpoint so every later serve — including the one
@@ -159,14 +203,29 @@ func pair(args []string) error {
 	if err := app.SaveRelayURL(*dataDir, tunnelURL); err != nil {
 		return err
 	}
-	fmt.Printf("relay saved: serve connects to %s automatically\n", tunnelURL)
+	humanf(*asJSON, "relay saved: serve connects to %s automatically", tunnelURL)
 
 	code, expiresIn, err := devicecred.PairingCode(ctx, *relay)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("pairing code: %s (valid for %s)\n", code, expiresIn)
-	fmt.Println("enter this code on the platform's connection page to bind it to this device")
+	base := strings.TrimRight(*relay, "/")
+	connectorURL := base + "/mcp"
+	humanf(*asJSON, "pairing code: %s (valid for %s)", code, expiresIn)
+	humanf(*asJSON, "enter this code on the platform's connection page to bind it to this device")
+	if *asJSON {
+		doc := map[string]any{
+			"relay": *relay, "connector_url": connectorURL,
+			"pairing_code": code, "expires_in_seconds": int(expiresIn.Seconds()),
+		}
+		if *ttlFlag != "" {
+			doc["requested_ttl"] = *ttlFlag
+		}
+		return emitJSON(doc)
+	}
+	// Machine-readable trailer for scripts: one line, no secrets beyond
+	// the code itself (which the script needs to relay to the user).
+	fmt.Printf("PAIR_CODE=%s EXPIRES_IN=%s CONNECTOR_URL=%s\n", code, expiresIn.Round(time.Second), connectorURL)
 	return nil
 }
 
@@ -242,11 +301,23 @@ func usage() {
                            (one command, no account: publishes <dir> (default:
                            the current directory) through a quick tunnel and
                            prints the connector URL and a pairing code)
+  fylane-companion init     --workspace <dir> [--non-interactive] [--data-dir <dir>] [--json]
+                           (headless setup: register <dir> and select it,
+                           no window; idempotent, exit 0 when already set)
   fylane-companion serve   [-workspace <dir>] [-addr 127.0.0.1:8787] [-relay wss://host/tunnel]
                            [-data-dir <dir>] [-approval-mode safe] [-log-level info]
                            [-update-manifest <https url>]
   fylane-companion pair    -relay <url> [-name <device name>] [-register] [-data-dir <dir>]
-                           (also persists the relay so `+"`serve`"+` needs no -relay flag)
+                           [-non-interactive] [-ttl <duration>] [-json]
+                           (also persists the relay so `+"`serve`"+` needs no -relay flag;
+                           prints a trailing PAIR_CODE=... line for scripts)
+  fylane-companion approvals [-data-dir <dir>] [-json]
+                           (headless: list approvals pending on the running daemon)
+  fylane-companion approve [-data-dir <dir>] [-json] <change-set-id>
+  fylane-companion reject  [-data-dir <dir>] [-json] <change-set-id>
+                           (headless: decide one pending approval through the
+                           same Resolve the desktop window uses; flags go
+                           before the id)
   fylane-companion direct  [-addr 127.0.0.1:8788] [-public-url <https url>] [-off]
                            (direct mode: serve publishes its own OAuth + MCP
                            surface for a tunnel; no relay, no device pairing)

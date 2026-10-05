@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // Changing one step by hand (U-T5 / D40). What the desktop may change is the

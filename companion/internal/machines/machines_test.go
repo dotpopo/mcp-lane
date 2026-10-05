@@ -552,7 +552,7 @@ func TestCompatibleIgnoresTheDevSuffixOnly(t *testing.T) {
 	if compatible("0.0.3", "0.0.4") || compatible("", "0.0.4") {
 		t.Error("different or missing versions must not be")
 	}
-	if installURL("v0.0.4") != "https://raw.githubusercontent.com/leazoot/fylane/v0.0.4/scripts/install.sh" {
+	if installURL("v0.0.4") != "https://raw.githubusercontent.com/dotpopo/mcp-lane/v0.0.4/scripts/install.sh" {
 		t.Error(installURL("v0.0.4"))
 	}
 }

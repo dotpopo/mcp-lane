@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // wsWithRules builds a handle over dir with exactly the rules given, so a

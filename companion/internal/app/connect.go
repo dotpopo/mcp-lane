@@ -6,9 +6,9 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/leazoot/fylane/companion/internal/ctlapi"
-	"github.com/leazoot/fylane/companion/internal/directsrv"
-	"github.com/leazoot/fylane/companion/internal/tunnelproc"
+	"github.com/dotpopo/mcp-lane/companion/internal/ctlapi"
+	"github.com/dotpopo/mcp-lane/companion/internal/directsrv"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelproc"
 )
 
 // The connect screen's back end: which tunnel publishes this machine, what it

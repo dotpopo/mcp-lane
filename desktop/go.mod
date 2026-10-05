@@ -1,4 +1,4 @@
-module github.com/leazoot/fylane/desktop
+module github.com/dotpopo/mcp-lane/desktop
 
 go 1.25.0
 

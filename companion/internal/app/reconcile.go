@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // reconcileRuns answers every command that was running when the Core last

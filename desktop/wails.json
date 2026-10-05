@@ -7,11 +7,11 @@
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
-    "name": "leazoot",
-    "email": "r.lz@anche.no"
+    "name": "dotpopo",
+    "email": "dotpopo@users.noreply.github.com"
   },
   "info": {
-    "productName": "Fylane",
+    "productName": "mcp-lane",
     "productVersion": "0.0.8"
   }
 }

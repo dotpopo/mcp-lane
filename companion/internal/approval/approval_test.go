@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 func testBudgets(d time.Duration) Budgets {

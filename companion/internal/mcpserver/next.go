@@ -1,9 +1,9 @@
 package mcpserver
 
 import (
-	"github.com/leazoot/fylane/companion/internal/nextstep"
-	"github.com/leazoot/fylane/companion/internal/tasks"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/nextstep"
+	"github.com/dotpopo/mcp-lane/companion/internal/tasks"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // The closed next-step vocabulary is mapped here rather than inside

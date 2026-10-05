@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 func (f *fixture) rollback(t *testing.T, changeSetID string) *Result {

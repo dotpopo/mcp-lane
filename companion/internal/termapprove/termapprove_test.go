@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // harness runs a real approval service whose every request goes to the

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/tasks"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/tasks"
 )
 
 // historyLimit bounds what the task screen loads. Enough to cover weeks of

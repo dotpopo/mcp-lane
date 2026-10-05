@@ -19,8 +19,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // diffLines is how much of a diff is shown before it is cut. Enough to read

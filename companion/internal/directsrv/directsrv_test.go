@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/shared/authsrv"
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/shared/authsrv"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 // mcpProbe stands in for the MCP handler and records what reached it.

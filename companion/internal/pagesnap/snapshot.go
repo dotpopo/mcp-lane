@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
-	"github.com/leazoot/fylane/companion/internal/urlfetch"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/urlfetch"
 )
 
 const (

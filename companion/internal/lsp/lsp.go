@@ -35,7 +35,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
 )
 
 // Server is one language server: a program on this machine, the file

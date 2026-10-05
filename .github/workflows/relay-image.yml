@@ -57,8 +57,8 @@ jobs:
             type=sha,format=long
             type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
           labels: |
-            org.opencontainers.image.title=Fylane Relay
-            org.opencontainers.image.description=Self-hosted Fylane relay; forwards MCP calls in memory and stores metadata only
+            org.opencontainers.image.title=mcp-lane relay
+            org.opencontainers.image.description=Self-hosted mcp-lane relay; forwards MCP calls in memory and stores metadata only
 
       - id: build
         uses: docker/build-push-action@v6

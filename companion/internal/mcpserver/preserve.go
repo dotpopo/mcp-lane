@@ -8,7 +8,7 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/encoding/unicode"
 
-	"github.com/leazoot/fylane/companion/internal/textenc"
+	"github.com/dotpopo/mcp-lane/companion/internal/textenc"
 )
 
 // textProfile captures how an existing file stores its text so that edits

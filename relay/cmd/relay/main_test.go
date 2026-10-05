@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leazoot/fylane/relay/internal/approverproxy"
-	"github.com/leazoot/fylane/shared/ratelimit"
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/relay/internal/approverproxy"
+	"github.com/dotpopo/mcp-lane/shared/ratelimit"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 func legacyFixture(t *testing.T) http.Handler {
@@ -193,5 +193,46 @@ func TestApproverSurfaceIsServedHereAndForwardedFromHere(t *testing.T) {
 	rec := get(http.MethodGet, "/v1/approver/inbox", "Fylane-Approver dev_a.apr_1:1:nonce0123456789ab:c2ln")
 	if rec.Code != http.StatusServiceUnavailable || !strings.Contains(rec.Body.String(), "offline") {
 		t.Errorf("inbox with a credential did not reach the forwarder: %d %s", rec.Code, rec.Body)
+	}
+}
+
+func TestRedactPath(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{"/mcp", "/mcp"},
+		{"/mcp/", "/mcp/"},
+		{"/mcp/shared-secret", "/mcp/REDACTED"},
+		{"/mcp/shared-secret/", "/mcp/REDACTED/"},
+		{"/mcp/shared-secret/extra", "/mcp/REDACTED/extra"},
+		{"/authorize", "/authorize"},
+		{"/v1/approver/inbox", "/v1/approver/inbox"},
+		{"", ""},
+	}
+	for _, tc := range cases {
+		if got := redactPath(tc.in); got != tc.want {
+			t.Errorf("redactPath(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+// A legacy capability URL carries the token in the path. The access log must
+// keep the endpoint but never the value.
+func TestWithAccessLogRedactsCapabilitySegment(t *testing.T) {
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+
+	h := withAccessLog(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	req := httptest.NewRequest(http.MethodPost, "/mcp/topsecret-token-value", strings.NewReader("{}"))
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	line := buf.String()
+	if !strings.Contains(line, "POST /mcp/REDACTED -> 401") {
+		t.Fatalf("access log line missing or unredacted: %q", line)
+	}
+	if strings.Contains(line, "topsecret") {
+		t.Fatalf("capability token leaked into the log: %q", line)
 	}
 }

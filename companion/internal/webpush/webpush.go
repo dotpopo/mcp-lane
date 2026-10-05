@@ -33,7 +33,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/urlfetch"
+	"github.com/dotpopo/mcp-lane/companion/internal/urlfetch"
 )
 
 // Subscription is what a browser's PushManager produced: where to post, and
@@ -72,7 +72,7 @@ const (
 	recordSize = 4096
 	// subject is the contact the push service may use about this sender,
 	// as VAPID requires one.
-	subject = "https://github.com/leazoot/fylane"
+	subject = "https://github.com/dotpopo/mcp-lane"
 	// tokenLife is how long a VAPID token is good for; the maximum allowed
 	// is 24 hours, and one is minted per send anyway.
 	tokenLife = 12 * time.Hour

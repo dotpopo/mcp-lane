@@ -14,7 +14,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/leazoot/fylane/companion/internal/applog"
+	"github.com/dotpopo/mcp-lane/companion/internal/applog"
 )
 
 const (

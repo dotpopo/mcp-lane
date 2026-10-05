@@ -7,7 +7,7 @@ import (
 
 	"github.com/aymanbagabas/go-udiff"
 
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // Impact on the approval face.

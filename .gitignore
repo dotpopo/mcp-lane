@@ -28,6 +28,10 @@ third_party/cloudflared/bin/
 
 # Release artifacts and signing assets never enter the repo
 dist/
+
+# Local tooling state (never committed)
+.birdview/
+.codegraph/
 *.p12
 *.pfx
 *.mobileprovision

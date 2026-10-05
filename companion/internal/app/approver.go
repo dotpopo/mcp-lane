@@ -1,12 +1,12 @@
 package app
 
 import (
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/approver"
-	"github.com/leazoot/fylane/companion/internal/ctlapi"
-	"github.com/leazoot/fylane/companion/internal/devicecred"
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/webpush"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/approver"
+	"github.com/dotpopo/mcp-lane/companion/internal/ctlapi"
+	"github.com/dotpopo/mcp-lane/companion/internal/devicecred"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/webpush"
 )
 
 // approverDevices builds the approver surface: prompts and decisions come

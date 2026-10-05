@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 
-	"github.com/leazoot/fylane/companion/internal/routerule"
+	"github.com/dotpopo/mcp-lane/companion/internal/routerule"
 )
 
 // Route rules are user preference, so they live in config.json beside the

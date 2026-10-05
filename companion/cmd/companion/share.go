@@ -17,10 +17,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/app"
-	"github.com/leazoot/fylane/companion/internal/applog"
-	"github.com/leazoot/fylane/companion/internal/tunnelget"
-	"github.com/leazoot/fylane/companion/internal/tunnelproc"
+	"github.com/dotpopo/mcp-lane/companion/internal/app"
+	"github.com/dotpopo/mcp-lane/companion/internal/applog"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelget"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelproc"
 )
 
 // share is the shortest path from a fresh checkout to a working endpoint:

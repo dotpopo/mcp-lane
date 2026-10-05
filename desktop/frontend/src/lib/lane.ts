@@ -255,10 +255,62 @@ export function humanBytes(bytes: number): string {
   return `${shown} ${units[i]}`;
 }
 
+/** How risky one held request reads, from fields the Core already sends.
+ *  Pure frontend scoring — no backend change. Signals, in order of weight:
+ *  a sensitive path, a recursive delete, an undo that will not hold, the
+ *  number of operations, and how far the change reaches. Thresholds are
+ *  deliberately coarse: this is a glance, not a verdict, and the details
+ *  panel keeps every original field for the actual decision. */
+export type RiskLevel = "low" | "medium" | "high";
+
+export function riskOf(files: PendingFile[]): RiskLevel {
+  let score = 0;
+  let sensitive = 0;
+  let recursive = 0;
+  let beyondUndo = 0;
+  let callers = 0;
+  let partial = false;
+  for (const f of files) {
+    if (f.sensitive) sensitive++;
+    if (f.recursive) recursive++;
+    if (f.beyondUndo) beyondUndo++;
+    if (f.impact) {
+      callers = Math.max(callers, f.impact.callers);
+      if (f.impact.partial) partial = true;
+    }
+  }
+  // Each flag counts, but a request with ten sensitive files is not ten
+  // times the warning of one — caps keep one loud file from grading the
+  // whole queue by itself. A single sensitive file or a single recursive
+  // delete already reaches high on its own: those are the two writes the
+  // product never lets through unasked, whatever mode it is in.
+  score += Math.min(sensitive, 2) * 5;
+  score += Math.min(recursive, 2) * 5;
+  score += Math.min(beyondUndo, 2) * 3;
+  if (files.length >= 8) score += 2;
+  else if (files.length >= 4) score += 1;
+  if (callers >= 10) score += 3;
+  else if (callers >= 3) score += 2;
+  if (partial) score += 1;
+  if (score >= 5) return "high";
+  if (score >= 2) return "medium";
+  return "low";
+}
+
 /** The change set held at the gate, or null when nothing is waiting. */
-export function pendingInfo(approvals: Approval[], { t }: Translator): PendingInfo | null {
-  const a = approvals[0];
-  if (!a) return null;
+export function pendingInfo(approvals: Approval[], tr: Translator): PendingInfo | null {
+  const list = pendingList(approvals, tr);
+  return list[0] ?? null;
+}
+
+/** Every change set held at the gate, oldest first as the Core sent them.
+ *  pendingInfo above is the first of these; the lane keeps the whole list
+ *  so a second request no longer hides behind the first. */
+export function pendingList(approvals: Approval[], tr: Translator): PendingInfo[] {
+  return approvals.map((a) => toPendingInfo(a, tr.t));
+}
+
+function toPendingInfo(a: Approval, t: Translator["t"]): PendingInfo {
   // A prompt from a Core that predates the kind field still has to render;
   // write is the reading that shows the most and hides nothing.
   const kind: ApprovalKind = a.kind ?? "write";

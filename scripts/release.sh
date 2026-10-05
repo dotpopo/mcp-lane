@@ -33,7 +33,7 @@ VERSION=$(cat VERSION)
 out="dist/$VERSION"
 rm -rf "$out"
 mkdir -p "$out"
-ldflags="-s -w -X github.com/leazoot/fylane/shared/buildinfo.Version=$VERSION"
+ldflags="-s -w -X github.com/dotpopo/mcp-lane/shared/buildinfo.Version=$VERSION"
 
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT

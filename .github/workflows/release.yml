@@ -142,6 +142,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" staging/* \
-            --title "Fylane ${{ needs.check.outputs.version }}" \
+            --title "mcp-lane ${{ needs.check.outputs.version }}" \
             --notes "Artifacts are unsigned. macOS reports an unidentified developer and Windows shows a SmartScreen warning; verify the download against SHA256SUMS before opening it." \
             --verify-tag

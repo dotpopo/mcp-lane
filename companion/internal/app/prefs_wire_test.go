@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/ctlapi"
+	"github.com/dotpopo/mcp-lane/companion/internal/ctlapi"
 )
 
 // The settings page offers a fixed set of timeouts and the Core refuses

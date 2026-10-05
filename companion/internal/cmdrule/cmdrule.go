@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/leazoot/fylane/companion/internal/cmdexec"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdexec"
 )
 
 // Verdict is how much authority a command needs.

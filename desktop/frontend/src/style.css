@@ -1181,6 +1181,51 @@ a {
   animation: fyFade 0.28s ease-out 0.13s both;
 }
 
+/* The one-line risk read at the top of an approval card. Colours are the
+   screen's own and nothing else: brick is high — the same brick the metaline
+   uses for a rule that stopped something on purpose — amber is medium, sage
+   is low. One line always: it is a glance, and the details keep the fields. */
+.fy-risk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  max-width: 660px;
+  font: 400 12.5px/1.5 var(--fy-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: fyFade 0.28s ease-out 0.1s both;
+}
+.fy-risk .fy-dot {
+  background: currentColor;
+}
+.fy-risk[data-level="high"] {
+  color: var(--fy-brick);
+}
+.fy-risk[data-level="medium"] {
+  color: var(--fy-amber);
+}
+.fy-risk[data-level="low"] {
+  color: var(--fy-sage);
+}
+
+/* The held queue: which request this is, and the way to the neighbours.
+   An underlined-words row, like the rail's own verbs — not another set of
+   buttons competing with the Approve below it. */
+.fy-queue {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  animation: fyFade 0.22s ease-out both;
+}
+.fy-queue-pos {
+  font: 400 12px/1.4 var(--fy-mono);
+  color: var(--fy-faint);
+  font-variant-numeric: tabular-nums;
+}
+
 /* The in-place expansion under a request. */
 .fy-detail {
   display: grid;

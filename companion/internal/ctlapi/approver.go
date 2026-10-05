@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/leazoot/fylane/companion/internal/approver"
+	"github.com/dotpopo/mcp-lane/companion/internal/approver"
 )
 
 // ApproverControl is the settings page's view of the approver devices: who is

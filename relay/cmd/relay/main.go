@@ -15,13 +15,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/leazoot/fylane/relay/internal/approverproxy"
-	"github.com/leazoot/fylane/relay/internal/pgstore"
-	"github.com/leazoot/fylane/shared/approverpage"
-	"github.com/leazoot/fylane/shared/authsrv"
-	"github.com/leazoot/fylane/shared/buildinfo"
-	"github.com/leazoot/fylane/shared/ratelimit"
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/relay/internal/approverproxy"
+	"github.com/dotpopo/mcp-lane/relay/internal/pgstore"
+	"github.com/dotpopo/mcp-lane/shared/approverpage"
+	"github.com/dotpopo/mcp-lane/shared/authsrv"
+	"github.com/dotpopo/mcp-lane/shared/buildinfo"
+	"github.com/dotpopo/mcp-lane/shared/ratelimit"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 const (
@@ -72,12 +72,14 @@ func main() {
 
 func usage() {
 	fmt.Fprintln(os.Stderr, `usage:
-  fylane-relay serve [-addr 127.0.0.1:9000] [-issuer https://relay.example]
+  fylane-relay serve [-addr 127.0.0.1:9000] [-issuer https://relay.example] [-access-ttl 30m]
   fylane-relay version
 
 Authentication modes:
   default          OAuth 2.1 + PKCE with device pairing; Companions register
                    at /v1/devices and tunnel with device credentials.
+                   -access-ttl sets the platform access-token lifetime
+                   (default 30m, minimum 5m; shorter is rejected at startup).
   FYLANE_RELAY_DB  where OAuth metadata persists: a PostgreSQL URL, or any
                    other value as a SQLite file path. Unset keeps it in
                    memory, so every restart drops existing pairings.
@@ -123,14 +125,34 @@ func (r *statusRecorder) WriteHeader(code int) {
 
 // withAccessLog emits one line per auth-surface request — method, path,
 // status, duration only. Query strings, bodies, and headers never reach the
-// log: OAuth parameters and codes travel there.
+// log: OAuth parameters and codes travel there. A legacy capability token in
+// the path (/mcp/<token>) is redacted to /mcp/REDACTED before it is written:
+// only the segment's existence is worth knowing, never its value.
 func withAccessLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		start := time.Now()
 		next.ServeHTTP(rec, r)
-		log.Printf("authsrv: %s %s -> %d (%s)", r.Method, r.URL.Path, rec.status, time.Since(start).Round(time.Millisecond))
+		log.Printf("authsrv: %s %s -> %d (%s)", r.Method, redactPath(r.URL.Path), rec.status, time.Since(start).Round(time.Millisecond))
 	})
+}
+
+// redactPath removes a legacy capability token from a path before logging:
+// /mcp/<token> becomes /mcp/REDACTED (a trailing rest, if any, is kept).
+// Anything that is not a /mcp/<segment> path is returned unchanged, so the
+// log stays useful for every other endpoint.
+func redactPath(p string) string {
+	rest, ok := strings.CutPrefix(p, "/mcp/")
+	if !ok || rest == "" {
+		return p
+	}
+	if i := strings.IndexByte(rest, '/'); i >= 0 {
+		if rest[:i] == "" {
+			return p
+		}
+		return "/mcp/REDACTED/" + rest[i+1:]
+	}
+	return "/mcp/REDACTED"
 }
 
 // legacyMCP guards the public MCP endpoint in shared-token mode. AI platforms
@@ -214,8 +236,20 @@ func serve(args []string) error {
 	fs := flag.NewFlagSet("serve", flag.ExitOnError)
 	addr := fs.String("addr", "127.0.0.1:9000", "listen address")
 	issuer := fs.String("issuer", "", "public base URL of this relay (required unless FYLANE_TUNNEL_TOKEN is set)")
+	accessTTLRaw := fs.String("access-ttl", "", "platform access-token lifetime, e.g. 30m or 2h (default 30m, minimum 5m)")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	// Fail fast on a misconfigured lifetime: a token window nobody asked
+	// for — or a typo like "30" with no unit — must stop the process, not
+	// silently widen or collapse the grant.
+	accessTTL := authsrv.DefaultAccessTokenTTL
+	if *accessTTLRaw != "" {
+		d, err := authsrv.ParseAccessTTL(*accessTTLRaw)
+		if err != nil {
+			return err
+		}
+		accessTTL = d
 	}
 
 	mux := http.NewServeMux()
@@ -269,7 +303,8 @@ func serve(args []string) error {
 			store = authsrv.NewMemoryStore()
 			log.Printf("using in-memory metadata store (set FYLANE_RELAY_DB for persistence)")
 		}
-		auth := &authsrv.Server{Issuer: strings.TrimRight(*issuer, "/"), Store: store}
+		auth := &authsrv.Server{Issuer: strings.TrimRight(*issuer, "/"), Store: store, AccessTokenTTL: accessTTL}
+		log.Printf("platform access-token TTL: %s", accessTTL)
 		// OAuth and pairing endpoints have no device identity to key on, so
 		// they get per-IP throttling (registration, token, pairing brute
 		// force). Mounted as the fallback handler; /mcp and /tunnel below

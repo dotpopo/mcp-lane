@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/approval"
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/cmdrule"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/approval"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdrule"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // The authority matrix: for every combination of the settings a user can

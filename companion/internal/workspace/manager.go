@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
 )
 
 // Workspace statuses (pause all external access, revoke

@@ -3,7 +3,7 @@ package approver
 import (
 	"net/http"
 
-	"github.com/leazoot/fylane/shared/approverpage"
+	"github.com/dotpopo/mcp-lane/shared/approverpage"
 )
 
 // PageRoutes mounts the device page next to the API it calls. The page

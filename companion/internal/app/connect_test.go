@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/ctlapi"
-	"github.com/leazoot/fylane/companion/internal/directsrv"
+	"github.com/dotpopo/mcp-lane/companion/internal/ctlapi"
+	"github.com/dotpopo/mcp-lane/companion/internal/directsrv"
 )
 
 // fakeTunnelBinary puts a stand-in cloudflared on PATH that announces an

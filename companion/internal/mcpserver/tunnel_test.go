@@ -10,7 +10,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 // TestMCPOverTunnel exercises the full Phase 0 chain: MCP client → relay

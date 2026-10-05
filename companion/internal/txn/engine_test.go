@@ -11,8 +11,8 @@ import (
 
 	"golang.org/x/text/encoding/simplifiedchinese"
 
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/workspace"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/workspace"
 )
 
 // recordingApprover approves or denies everything and captures the request.

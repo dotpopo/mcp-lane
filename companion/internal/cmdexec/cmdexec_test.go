@@ -10,8 +10,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/readbox"
-	"github.com/leazoot/fylane/companion/internal/sandbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/sandbox"
 )
 
 // recorder collects audit records so tests can assert that every attempt,

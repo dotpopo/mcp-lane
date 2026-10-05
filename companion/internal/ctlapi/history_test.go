@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/store"
-	"github.com/leazoot/fylane/companion/internal/tasks"
+	"github.com/dotpopo/mcp-lane/companion/internal/store"
+	"github.com/dotpopo/mcp-lane/companion/internal/tasks"
 )
 
 var base = time.Date(2026, 8, 30, 10, 0, 0, 0, time.UTC)

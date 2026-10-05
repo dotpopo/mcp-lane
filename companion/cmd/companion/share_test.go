@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/tunnelget"
-	"github.com/leazoot/fylane/companion/internal/tunnelproc"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelget"
+	"github.com/dotpopo/mcp-lane/companion/internal/tunnelproc"
 )
 
 // The download is an offer, not a default. Under `go test` stdin is at end of

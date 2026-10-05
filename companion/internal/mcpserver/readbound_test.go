@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leazoot/fylane/companion/internal/cmdgate"
-	"github.com/leazoot/fylane/companion/internal/readbox"
-	"github.com/leazoot/fylane/companion/internal/tasks"
-	"github.com/leazoot/fylane/companion/internal/txn"
+	"github.com/dotpopo/mcp-lane/companion/internal/cmdgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/tasks"
+	"github.com/dotpopo/mcp-lane/companion/internal/txn"
 )
 
 // A denied read reaches the caller as the program's own "operation not

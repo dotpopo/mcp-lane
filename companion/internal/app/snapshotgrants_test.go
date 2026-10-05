@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/companion/internal/pagesnap"
+	"github.com/dotpopo/mcp-lane/companion/internal/pagesnap"
 )
 
 // TestSnapshotGrantsSurviveInTheSettingsFile: the prompt promises a folder

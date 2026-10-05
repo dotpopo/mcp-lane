@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leazoot/fylane/shared/tunnel"
+	"github.com/dotpopo/mcp-lane/shared/tunnel"
 )
 
 // seen is what a Companion behind the relay saw arrive through its tunnel.

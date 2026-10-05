@@ -39,7 +39,10 @@ func relayKey(relayURL string) (string, error) {
 	return "relay:" + u.Host, nil
 }
 
-// Save stores credentials for relayURL in the OS keychain.
+// Save stores credentials for relayURL in the OS keychain. When the
+// keychain cannot be used and FYLANE_DEVICE_CREDENTIALS_FILE is set, they
+// are stored in that file (0600) instead — explicitly opted in, never
+// silent. See filefallback.go and docs/headless.md.
 func Save(relayURL string, creds Credentials) error {
 	key, err := relayKey(relayURL)
 	if err != nil {
@@ -50,12 +53,25 @@ func Save(relayURL string, creds Credentials) error {
 		return err
 	}
 	if err := keyring.Set(keyringService, key, string(raw)); err != nil {
-		return fmt.Errorf("storing device credentials in the OS keychain: %w", err)
+		if path := credentialsFile(); path != "" {
+			if ferr := saveFile(path, relayURL, creds); ferr != nil {
+				return fmt.Errorf("storing device credentials in the OS keychain: %v; file fallback failed: %v", err, ferr)
+			}
+			return nil
+		}
+		return fmt.Errorf("storing device credentials in the OS keychain: %w (headless servers without a keychain can set %s; see docs/headless.md for the risk)",
+			err, CredentialsFileEnv)
 	}
 	return nil
 }
 
 // Load reads credentials for relayURL from the OS keychain.
+//
+// Headless fallback: when the keychain cannot be used at all (not merely
+// empty) and FYLANE_DEVICE_CREDENTIALS_FILE is set, credentials are read
+// from that file instead. The fallback never engages silently — it requires
+// the operator to name the file — and plaintext-at-rest is the documented
+// price of it (see docs/headless.md).
 func Load(relayURL string) (Credentials, error) {
 	var creds Credentials
 	key, err := relayKey(relayURL)
@@ -63,16 +79,53 @@ func Load(relayURL string) (Credentials, error) {
 		return creds, err
 	}
 	raw, err := keyring.Get(keyringService, key)
+	if err == nil {
+		if err := json.Unmarshal([]byte(raw), &creds); err != nil {
+			return creds, fmt.Errorf("stored device credentials are invalid; re-run pair")
+		}
+		return creds, nil
+	}
 	if err == keyring.ErrNotFound {
+		// The keychain works but holds nothing for this relay. A configured
+		// fallback file may still hold credentials written by an earlier
+		// headless pairing on a machine whose keychain never worked.
+		if path := credentialsFile(); path != "" {
+			if fileCreds, ferr := loadFile(path, relayURL); ferr == nil {
+				return fileCreds, nil
+			}
+		}
 		return creds, fmt.Errorf("no device credentials for this relay; run `fylane-companion pair -relay %s` first", relayURL)
 	}
+	// The keychain itself is unusable (headless server, no D-Bus, ...).
+	if path := credentialsFile(); path != "" {
+		if fileCreds, ferr := loadFile(path, relayURL); ferr == nil {
+			return fileCreds, nil
+		} else {
+			return creds, fmt.Errorf("reading device credentials from the OS keychain: %v; file fallback failed: %v", err, ferr)
+		}
+	}
+	return creds, fmt.Errorf("reading device credentials from the OS keychain: %w (headless servers without a keychain can set %s; see docs/headless.md for the risk)",
+		err, CredentialsFileEnv)
+}
+
+// Backend reports where Load would read this relay's credentials from:
+// "keychain", the file fallback ("file"), or "" when none holds them. It is
+// a probe for honest status messages, not a decision procedure — Load keeps
+// its own precedence.
+func Backend(relayURL string) string {
+	key, err := relayKey(relayURL)
 	if err != nil {
-		return creds, fmt.Errorf("reading device credentials from the OS keychain: %w", err)
+		return ""
 	}
-	if err := json.Unmarshal([]byte(raw), &creds); err != nil {
-		return creds, fmt.Errorf("stored device credentials are invalid; re-run pair")
+	if _, err := keyring.Get(keyringService, key); err == nil {
+		return "keychain"
 	}
-	return creds, nil
+	if path := credentialsFile(); path != "" {
+		if _, err := loadFile(path, relayURL); err == nil {
+			return "file"
+		}
+	}
+	return ""
 }
 
 // APIBase converts a ws://, wss://, http://, or https:// relay URL to its

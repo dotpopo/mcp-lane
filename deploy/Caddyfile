@@ -11,11 +11,17 @@
 	# Requests, not payloads: the relay's own promise is that file content
 	# never lands anywhere, and an access log full of paths would break it
 	# from the outside.
+	#
+	# The legacy capability token travels in the path (/mcp/<token>) for
+	# platforms that cannot send headers, so the path needs its own
+	# redaction next to the query one: only the segment's existence is
+	# worth knowing, never its value.
 	log {
 		format filter {
 			wrap console
 			fields {
 				request>uri query {replace: REDACTED}
+				request>uri regexp (/mcp/)[^/?#\s]+ ${1}REDACTED
 				request>headers>Authorization delete
 			}
 		}

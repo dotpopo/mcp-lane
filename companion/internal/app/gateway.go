@@ -3,10 +3,10 @@ package app
 import (
 	"strings"
 
-	"github.com/leazoot/fylane/companion/internal/ctlapi"
-	"github.com/leazoot/fylane/companion/internal/lsp"
-	"github.com/leazoot/fylane/companion/internal/mcpgate"
-	"github.com/leazoot/fylane/companion/internal/readbox"
+	"github.com/dotpopo/mcp-lane/companion/internal/ctlapi"
+	"github.com/dotpopo/mcp-lane/companion/internal/lsp"
+	"github.com/dotpopo/mcp-lane/companion/internal/mcpgate"
+	"github.com/dotpopo/mcp-lane/companion/internal/readbox"
 )
 
 // mcpProviders builds the local MCP gateway's registry from the settings file.
