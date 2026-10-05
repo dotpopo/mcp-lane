@@ -119,9 +119,22 @@ console.error("boom", 42);
 			return nil, nil
 		},
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	shot, err := s.Take(ctx, Request{WorkspaceID: "ws_a", Port: pagePort, Path: "/login", Width: 800, Height: 600, MaxBytes: 512 << 10})
+	// A loaded CI runner can take longer than the snapshot's 45s budget to
+	// bring the browser up — one Windows run passed in 30s, the next never
+	// wrote its DevTools port in time. Retry once with a fresh deadline so
+	// a slow start does not fail the suite; only browser-startup errors
+	// retry, and a browser that cannot start at all still fails twice.
+	var shot *Shot
+	var err error
+	for attempt := 0; attempt < 2; attempt++ {
+		attemptCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		shot, err = s.Take(attemptCtx, Request{WorkspaceID: "ws_a", Port: pagePort, Path: "/login", Width: 800, Height: 600, MaxBytes: 512 << 10})
+		cancel()
+		if err == nil || !strings.Contains(err.Error(), "browser") {
+			break
+		}
+		t.Logf("snapshot attempt %d did not get a browser: %v", attempt+1, err)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,6 +170,8 @@ console.error("boom", 42);
 		t.Fatalf("browser profile left behind: %v", left)
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
 	if _, err := s.Take(ctx, Request{WorkspaceID: "ws_a", Port: otherPort, Path: "/"}); !errors.Is(err, ErrNotThisWorkspace) {
 		t.Fatalf("another process's port: %v", err)
 	}

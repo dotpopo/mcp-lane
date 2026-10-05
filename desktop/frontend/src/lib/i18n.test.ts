@@ -88,9 +88,10 @@ describe("source tree", () => {
   // two scans read the markup instead of the language.
   //
   // Short tokens that are the same word in both languages, and are typed or
-  // pressed rather than read. "Fylane" joins them as the product's name: a
-  // Chinese window still says Fylane on its title bar.
-  const TOKENS = new Set(["ANY", "ESC", "Fylane"]);
+  // pressed rather than read. "Fylane" and "mcp-lane" join them as product
+  // names: a Chinese window still shows them untranslated, in the title bar
+  // and the window mark.
+  const TOKENS = new Set(["ANY", "ESC", "Fylane", "mcp-lane"]);
 
   // Key names are dictated by the keyboard, not by the interface language —
   // a Chinese Windows user still presses Ctrl K. They vary by platform, so

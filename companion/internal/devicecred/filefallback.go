@@ -10,14 +10,22 @@
 // Format: a JSON object mapping the keychain entry name ("relay:<host>")
 // to credentials, e.g. {"relay:relay.example:8443": {"device_id": "...",
 // "device_secret": "..."}}. The file must be owner-only (0600); wider
-// permissions are refused.
+// permissions are refused. That gate needs Unix mode bits, so on Windows the
+// file instead inherits its directory's ACLs (see ownerOnlyEnforced).
 package devicecred
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"runtime"
 )
+
+// ownerOnlyEnforced reports whether an owner-only (0600) file mode can be
+// relied on here. Windows carries no Unix mode bits — every file stats as
+// 0666 and Go's Chmod there only honors the read-only flag — so the 0600
+// gate cannot hold; the fallback file inherits its directory's ACLs.
+func ownerOnlyEnforced() bool { return runtime.GOOS != "windows" }
 
 // CredentialsFileEnv names the file fallback for device credentials. It is
 // only consulted when the OS keychain cannot be used; the keychain stays
@@ -56,6 +64,8 @@ func loadFile(path, relayURL string) (Credentials, error) {
 // saveFile stores one relay's credentials in the fallback file, preserving
 // the entries for other relays. The file is created owner-only (0600); a
 // pre-existing file with wider permissions is refused rather than reused.
+// Both halves of that gate apply only where modes exist (see
+// ownerOnlyEnforced).
 func saveFile(path, relayURL string, creds Credentials) error {
 	key, err := relayKey(relayURL)
 	if err != nil {
@@ -70,7 +80,7 @@ func saveFile(path, relayURL string, creds Credentials) error {
 		return fmt.Errorf("reading %s: %w", CredentialsFileEnv, err)
 	}
 	if fi, err := os.Stat(path); err == nil {
-		if fi.Mode().Perm() != 0o600 {
+		if ownerOnlyEnforced() && fi.Mode().Perm() != 0o600 {
 			return fmt.Errorf("%s must be owner-only (0600), got %o: fix the permissions or move the secret back to the OS keychain",
 				CredentialsFileEnv, fi.Mode().Perm())
 		}
@@ -86,9 +96,12 @@ func saveFile(path, relayURL string, creds Credentials) error {
 		return fmt.Errorf("writing %s: %w", CredentialsFileEnv, err)
 	}
 	// WriteFile keeps a pre-existing mode; the secret must be owner-only
-	// even if something planted a lax file first.
-	if err := os.Chmod(path, 0o600); err != nil {
-		return fmt.Errorf("securing %s: %w", CredentialsFileEnv, err)
+	// even if something planted a lax file first. Skipped where modes do
+	// not exist (see ownerOnlyEnforced).
+	if ownerOnlyEnforced() {
+		if err := os.Chmod(path, 0o600); err != nil {
+			return fmt.Errorf("securing %s: %w", CredentialsFileEnv, err)
+		}
 	}
 	return nil
 }
