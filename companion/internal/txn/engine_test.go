@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -292,23 +291,21 @@ func TestIdempotentRetry(t *testing.T) {
 func TestMidApplyFailureRestoresEverything(t *testing.T) {
 	f := newFixture(t)
 	hash := f.write(t, "ok.txt", "keep\n")
-	f.write(t, "locked/target.txt", "old\n")
-	lockedHash := hashBytes([]byte("old\n"))
-	lockedDir := filepath.Join(f.root, "locked")
-	if runtime.GOOS == "windows" {
-		// Directory modes are ignored here. An open handle on the target is
-		// what refuses the rename that fs.go uses to replace it.
-		held, err := os.Open(filepath.Join(lockedDir, "target.txt"))
-		if err != nil {
-			t.Fatal(err)
+	lockedHash := f.write(t, "locked/target.txt", "old\n")
+
+	// Force the third operation to fail after the first two have been
+	// applied: land a concurrent edit while approval is pending so the
+	// re-verification immediately before mutation refuses it. Permission
+	// bits would do the same for a non-root user, but root ignores them
+	// (and Windows ignores directory modes), so a chmod/open-handle trick
+	// passes as root while failing in CI. The concurrent edit fails
+	// deterministically everywhere, on the same apply/undo path.
+	f.engine.Approver = approverFunc(func(_ context.Context, _ *ApprovalRequest) (Decision, error) {
+		if err := os.WriteFile(filepath.Join(f.root, "locked", "target.txt"), []byte("concurrent\n"), 0o644); err != nil {
+			return Decision{}, err
 		}
-		t.Cleanup(func() { held.Close() })
-	} else {
-		if err := os.Chmod(lockedDir, 0o555); err != nil {
-			t.Fatal(err)
-		}
-		t.Cleanup(func() { os.Chmod(lockedDir, 0o755) })
-	}
+		return Decision{Approved: true}, nil
+	})
 
 	res := f.execute(t,
 		Operation{Type: OpCreate, Path: "created.txt", Content: "temp\n"},
@@ -324,8 +321,8 @@ func TestMidApplyFailureRestoresEverything(t *testing.T) {
 	if got, _ := f.read(t, "ok.txt"); got != "keep\n" {
 		t.Errorf("failed transaction did not restore ok.txt: %q", got)
 	}
-	if got, _ := f.read(t, "locked/target.txt"); got != "old\n" {
-		t.Errorf("locked file was modified: %q", got)
+	if got, _ := f.read(t, "locked/target.txt"); got != "concurrent\n" {
+		t.Errorf("locked file was clobbered: %q", got)
 	}
 	rec, err := f.st.GetChangeSet(context.Background(), res.ChangeSetID)
 	if err != nil || rec.Status != store.ChangeSetFailed {
