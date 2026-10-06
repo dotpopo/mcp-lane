@@ -940,7 +940,7 @@ func (s *Server) handleAuthorizePost(w http.ResponseWriter, r *http.Request) {
 		storeFailed(w)
 		return
 	}
-	code := strings.ToUpper(strings.TrimSpace(r.PostFormValue("pairing_code")))
+	code := normalizePairingCode(r.PostFormValue("pairing_code"))
 	pairing, err := s.Store.TakePairingCode(code, time.Now())
 	if err != nil && !errors.Is(err, ErrNotFound) {
 		storeFailed(w)
@@ -1028,16 +1028,21 @@ func (s *Server) ApproveRequest(requestID, deviceID string) (nonce string, err e
 }
 
 // IssuePairingCode mints a short-lived, single-use pairing code for deviceID.
+// The displayed code carries its grouping dash for reading aloud; the stored
+// key is the normalized form, which is what handleAuthorizePost looks up —
+// the authorize page submits the code dashless, so an exact-match store would
+// otherwise never see the two as equal.
 func (s *Server) IssuePairingCode(deviceID string) (string, time.Duration, error) {
+	display := humanCode()
 	code := &PairingCode{
-		Code:      humanCode(),
+		Code:      normalizePairingCode(display),
 		DeviceID:  deviceID,
 		ExpiresAt: time.Now().Add(pairingCodeTTL),
 	}
 	if err := s.Store.PutPairingCode(code); err != nil {
 		return "", 0, err
 	}
-	return code.Code, pairingCodeTTL, nil
+	return display, pairingCodeTTL, nil
 }
 
 // handlePairRequestInfo returns the authoritative client name and verify
@@ -1366,6 +1371,19 @@ func humanCode() string {
 		out = append(out, alphabet[int(b)%len(alphabet)])
 	}
 	return string(out)
+}
+
+// normalizePairingCode keys a submitted pairing code the way it was
+// minted: upper-cased, with the grouping dash (and any spaces a browser or
+// platform added) removed. The authorize page's slots submit the code
+// dashless — its script strips every non-alphanumeric before submit — while
+// the stored code carries its dash, so without this no scripted submission
+// can ever match and every attempt fails as "not valid or has expired".
+func normalizePairingCode(code string) string {
+	code = strings.ToUpper(strings.TrimSpace(code))
+	code = strings.ReplaceAll(code, "-", "")
+	code = strings.ReplaceAll(code, " ", "")
+	return code
 }
 
 // AuthenticateDevice validates "Authorization: Bearer <device_id>:<secret>"

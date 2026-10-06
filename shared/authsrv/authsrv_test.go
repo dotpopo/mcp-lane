@@ -799,6 +799,52 @@ func TestWrongPairingCodeReprompts(t *testing.T) {
 	}
 }
 
+// TestPairingCodeNormalization submits the same minted code in every shape a
+// browser can produce. The authorize page's slots strip every non-alphanumeric
+// before submit, so the server sees the code dashless — while the stored code
+// carries its grouping dash. Without normalization that submission (the only
+// one a scripted browser ever sends) misses and the user always reads "not
+// valid or has expired".
+func TestPairingCodeNormalization(t *testing.T) {
+	variants := map[string]func(string) string{
+		"as minted":      func(s string) string { return s },
+		"dashless":       func(s string) string { return strings.ReplaceAll(s, "-", "") },
+		"lowercase":      func(s string) string { return strings.ToLower(s) },
+		"lower dashless": func(s string) string { return strings.ToLower(strings.ReplaceAll(s, "-", "")) },
+		"spaced":         func(s string) string { return strings.Replace(s, "-", " ", 1) },
+	}
+	for name, variant := range variants {
+		t.Run(name, func(t *testing.T) {
+			_, ts := newTestServer(t)
+			clientID, redirectURI := registerClient(t, ts)
+			_, challenge := pkcePair()
+			_, code := registerDevice(t, ts)
+
+			q := url.Values{
+				"client_id": {clientID}, "redirect_uri": {redirectURI},
+				"response_type": {"code"}, "code_challenge": {challenge},
+				"code_challenge_method": {"S256"},
+			}
+			resp, err := http.Get(ts.URL + "/authorize?" + q.Encode())
+			if err != nil {
+				t.Fatal(err)
+			}
+			page, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			m := requestIDRe.FindSubmatch(page)
+			if m == nil {
+				t.Fatalf("no request_id in page: %s", page)
+			}
+			resp2, body := postForm(t, noRedirect(), ts.URL+"/authorize", url.Values{
+				"request_id": {string(m[1])}, "pairing_code": {variant(code)},
+			}, nil)
+			if resp2.StatusCode != http.StatusFound {
+				t.Fatalf("pairing code %q submitted as %q = %d %s", code, variant(code), resp2.StatusCode, body)
+			}
+		})
+	}
+}
+
 // fetchPairingPage returns the rendered /authorize page.
 func fetchPairingPage(t *testing.T, ts *httptest.Server) string {
 	t.Helper()
@@ -946,11 +992,13 @@ func TestDeviceAuthAndPairingCodes(t *testing.T) {
 		t.Fatal("bogus device creds accepted")
 	}
 
-	// Pairing codes are single-use.
-	if _, err := s.Store.TakePairingCode(code, time.Now()); err != nil {
+	// Pairing codes are single-use. The store holds the normalized key while
+	// /v1/pair returns the display form, so normalize here as the authorize
+	// handler does — this path bypasses it.
+	if _, err := s.Store.TakePairingCode(normalizePairingCode(code), time.Now()); err != nil {
 		t.Fatal("pairing code not stored")
 	}
-	if _, err := s.Store.TakePairingCode(code, time.Now()); err == nil {
+	if _, err := s.Store.TakePairingCode(normalizePairingCode(code), time.Now()); err == nil {
 		t.Fatal("pairing code reusable")
 	}
 
